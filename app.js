@@ -51,7 +51,8 @@
       { id: "woning-gemeubeld", label: "Gemeubeld (+2/3 op woongedeelte)", soort: "vink" },
       { id: "woning-verwarming", label: "Forfait verwarming", soort: "vink" },
       { id: "woning-elektriciteit", label: "Forfait elektriciteit", soort: "vink" },
-      { id: "woning-preview", soort: "preview" }
+      { id: "woning-preview", soort: "preview" },
+      { id: "woning-ximus", soort: "preview" }
     ]},
     { id: "overige", titel: "Overige voordelen alle aard", toggle: true, velden: [
       { id: "vaa-gsm", label: "Gsm, internet & pc", soort: "bedrag" },
@@ -438,6 +439,7 @@
           + (w.vaaVerwarming ? " + verwarming " + formatEUR(w.vaaVerwarming) : "")
           + (w.vaaElektriciteit ? " + elektriciteit " + formatEUR(w.vaaElektriciteit) : "")
           + " = " + formatEUR(w.totaal) + " per jaar.";
+    $("woning-ximus").textContent = aan("woning") && !handmatig ? vergelijkMetXimus(input.woning, p, w) : "";
 
     $("netto-gecorrigeerd-jaar").textContent = formatEUR(r.nettoGecorrigeerd) + " per jaar";
     $("netto-gecorrigeerd-maand").textContent = formatEUR(r.nettoGecorrigeerdMaand);
@@ -515,6 +517,30 @@
     toonWaarschuwingen(r, input, p);
     toonIjkcontrole(p);
     stateUitDom();
+  }
+
+  // Toont of de gebruikte woningparameters overeenkomen met het
+  // X-imus analyseverslag, en zo niet, waar ze afwijken.
+  function vergelijkMetXimus(woningInput, p, w) {
+    var afwijkingen = [];
+    var X = Params.XIMUS_WONING;
+    if (Math.abs(p["vaa.kiIndexatie"] - X["vaa.kiIndexatie"]) > 0.0001) {
+      afwijkingen.push("KI-index " + factorFmt.format(p["vaa.kiIndexatie"]) + " i.p.v. " + factorFmt.format(X["vaa.kiIndexatie"]));
+    }
+    if (woningInput.verwarming && Math.abs(p["vaa.verwarmingForfait"] - X["vaa.verwarmingForfait"]) > 0.001) {
+      afwijkingen.push("verwarming " + formatEUR(p["vaa.verwarmingForfait"]) + " i.p.v. " + formatEUR(X["vaa.verwarmingForfait"]));
+    }
+    if (woningInput.elektriciteit && Math.abs(p["vaa.elektriciteitForfait"] - X["vaa.elektriciteitForfait"]) > 0.001) {
+      afwijkingen.push("elektriciteit " + formatEUR(p["vaa.elektriciteitForfait"]) + " i.p.v. " + formatEUR(X["vaa.elektriciteitForfait"]));
+    }
+    if (!afwijkingen.length) {
+      return "Komt overeen met het X-imus-verslag: de officiële cijfers voor inkomsten 2026 (KI-index 2,3 · verwarming € 2.560 · elektriciteit € 1.280) zijn dezelfde.";
+    }
+    var pXimus = {};
+    for (var k in p) pXimus[k] = p[k];
+    for (var xk in X) pXimus[xk] = X[xk];
+    var wXimus = Engine.berekenWoning(woningInput, pXimus);
+    return "Wijkt af van het X-imus-verslag (" + afwijkingen.join(", ") + "): X-imus zou " + formatEUR(wXimus.totaal) + " geven, hier " + formatEUR(w.totaal) + " (verschil " + formatEUR(w.totaal - wXimus.totaal) + ").";
   }
 
   function toonWaarschuwingen(r, input, p) {

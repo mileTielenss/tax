@@ -38,8 +38,9 @@
       "gemeente.naam": "Lommel",
       "gemeente.opcentiemenPct": 0.06,
 
-      // Woning en energie via de vennootschap (VAA, inkomstenjaar 2026,
-      // conform het X-imus analyseverslag: KI 713 x 75% x 2,3 x 100/60 x 2
+      // Woning en energie via de vennootschap (VAA, officiele cijfers
+      // inkomstenjaar 2026 volgens Securex/Group S; identiek aan het
+      // X-imus analyseverslag: KI 713 x 75% x 2,3 x 100/60 x 2
       // = 4.099,75 + forfaits = 7.939,75)
       "vaa.kiIndexatie": 2.3,
       "vaa.woningFactor": 2,
@@ -71,7 +72,7 @@
     sb: "https://www.liantis.be/sites/default/files/uploads/bijdragetabel_2026_1225_NL_digitaal.pdf",
     sbOfficieel: "https://www.rsvz.be/nl/faq/hoeveel-sociale-bijdragen-moet-ik-betalen",
     gemeente: "https://www.lommel.be/aanvullende-gemeentebelasting-op-de-personenbelasting-van-de-staat",
-    woning: "https://www.attentia.be/nl/nieuws/voordelen-huisvesting-verwarming-en-elektriciteit-in-2025/",
+    woning: "https://www.securex.be/nl/lex4you/werkgever/actuele-bedragen/sociaalrechtelijke-bedragen/huisvesting,-verwarming-en-elektriciteit",
     mc: "https://www.rsz.be/werkgevers/loonelementen/voordelen/maaltijdcheques",
     opties: "https://financien.belgium.be/nl/ondernemingen/personenbelasting/voordelen-alle-aard/aandelenopties",
     ipt: "https://financien.belgium.be/nl/ondernemingen/vennootschapsbelasting/belastingvoordelen/individuele-pensioentoezegging"
@@ -103,10 +104,10 @@
     { key: "gemeente.naam", label: "Gemeente", categorie: "Gemeentebelasting", type: "tekst", bron: BRON.gemeente, verify: false },
     { key: "gemeente.opcentiemenPct", label: "Aanvullende gemeentebelasting", categorie: "Gemeentebelasting", type: "pct", bron: BRON.gemeente, verify: true },
 
-    { key: "vaa.kiIndexatie", label: "Indexatiecoëfficiënt kadastraal inkomen", categorie: "Woning & energie (VAA)", type: "factor", bron: BRON.woning, verify: true },
+    { key: "vaa.kiIndexatie", label: "Indexatiecoëfficiënt kadastraal inkomen", categorie: "Woning & energie (VAA)", type: "factor", bron: BRON.woning, verify: false },
     { key: "vaa.woningFactor", label: "Vermenigvuldigingsfactor woning (x2)", categorie: "Woning & energie (VAA)", type: "factor", bron: BRON.woning, verify: false },
-    { key: "vaa.verwarmingForfait", label: "Forfait verwarming (leidinggevend)", categorie: "Woning & energie (VAA)", type: "eur", bron: BRON.woning, verify: true },
-    { key: "vaa.elektriciteitForfait", label: "Forfait elektriciteit (leidinggevend)", categorie: "Woning & energie (VAA)", type: "eur", bron: BRON.woning, verify: true },
+    { key: "vaa.verwarmingForfait", label: "Forfait verwarming (leidinggevend)", categorie: "Woning & energie (VAA)", type: "eur", bron: BRON.woning, verify: false },
+    { key: "vaa.elektriciteitForfait", label: "Forfait elektriciteit (leidinggevend)", categorie: "Woning & energie (VAA)", type: "eur", bron: BRON.woning, verify: false },
 
     { key: "mc.minEigenBijdrage", label: "Minimale eigen bijdrage per cheque", categorie: "Maaltijdcheques", type: "eur", bron: BRON.mc, verify: false },
     { key: "mc.maxZichtwaarde", label: "Maximale zichtwaarde per cheque", categorie: "Maaltijdcheques", type: "eur", bron: BRON.mc, verify: true },
@@ -125,10 +126,19 @@
     "2027": "Aanslagjaar 2027 (inkomsten 2026)"
   };
 
+  // Referentiecijfers uit het X-imus analyseverslag (14 juli 2026), om in
+  // de app zichtbaar te maken waar de gebruikte parameters ervan afwijken.
+  var XIMUS_WONING = {
+    "vaa.kiIndexatie": 2.3,
+    "vaa.verwarmingForfait": 2560,
+    "vaa.elektriciteitForfait": 1280
+  };
+
   var Params = {
     BUILTIN_PARAMS: BUILTIN_PARAMS,
     PARAM_FIELDS: PARAM_FIELDS,
-    AANSLAGJAAR_LABELS: AANSLAGJAAR_LABELS
+    AANSLAGJAAR_LABELS: AANSLAGJAAR_LABELS,
+    XIMUS_WONING: XIMUS_WONING
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = Params;
