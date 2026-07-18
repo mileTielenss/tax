@@ -156,8 +156,15 @@
     try { localStorage.setItem(MODUS_KEY, modus); } catch (e) { /* opslag */ }
     $("modus-maand").classList.toggle("actief", modus === "maand");
     $("modus-jaar").classList.toggle("actief", modus === "jaar");
+    zetModusKlasse();
     stateNaarDom();
     herreken();
+  }
+
+  // Op smalle schermen toont CSS enkel de kolom van de actieve modus.
+  function zetModusKlasse() {
+    document.body.classList.toggle("modus-maand", modus === "maand");
+    document.body.classList.toggle("modus-jaar", modus === "jaar");
   }
 
   /* ---------- invoer opbouwen ---------- */
@@ -227,9 +234,10 @@
     return rij;
   }
 
+  // De maand/jaar-keuze staat prominent bovenaan; enkel velden die ALTIJD
+  // per jaar zijn krijgen een suffix, zodat de labels kort en leesbaar blijven.
   function veldLabel(veld) {
-    if (veld.soort === "bedrag") return veld.label + (modus === "maand" ? " (per maand)" : " (per jaar)");
-    if (veld.soort === "jaar") return veld.label + " (per jaar)";
+    if (veld.soort === "jaar" && modus === "maand") return veld.label + " (€/jaar)";
     return veld.label;
   }
 
@@ -728,6 +736,7 @@
     sims = laadSims();
     $("modus-maand").classList.toggle("actief", modus === "maand");
     $("modus-jaar").classList.toggle("actief", modus === "jaar");
+    zetModusKlasse();
     stateNaarDom();
 
     $("sim-nieuw").addEventListener("click", nieuweSim);

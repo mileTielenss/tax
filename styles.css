@@ -161,12 +161,13 @@ button.klein { padding: 0.15rem 0.7rem; font-size: 0.8rem; }
 }
 .simbalk .terug:hover { background: var(--lila-zacht); }
 #sim-naam {
-  flex: 1;
+  flex-basis: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--paars);
+  font-size: 1.05rem;
 }
 .modus { display: inline-flex; margin-left: auto; background: var(--wit); border-radius: 999px; box-shadow: var(--schaduw); padding: 3px; }
 .modus button { border: none; border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.88rem; background: transparent; }
@@ -210,6 +211,7 @@ legend {
   color: var(--inkt);
 }
 .veldrij select { text-align: left; width: auto; }
+.veldrij .volle-breedte { width: 100%; flex-shrink: 1; }
 .veldrij input:focus, .veldrij select:focus {
   outline: none;
   border-color: var(--paars-mid);
@@ -348,7 +350,19 @@ footer {
 }
 
 @media (max-width: 480px) {
-  .veldrij input { width: 7.5rem; }
-  .groot { font-size: 1.7rem; }
+  main { padding: 1rem 0.7rem; }
+  header { padding: 0.85rem 1rem; }
+  fieldset { padding: 0.7rem 0.85rem 0.8rem; }
+  .kaart { padding: 0.9rem 0.95rem; }
+  .veldrij input { width: 7rem; }
+  .veldrij label { font-size: 0.95rem; }
+  .groot { font-size: 1.65rem; }
+  .simbalk { gap: 0.5rem; }
+  .simbalk .terug { margin-right: auto; }
   .modus { margin-left: 0; }
+
+  /* Toon in de uitkomsttabellen enkel de kolom van de actieve modus,
+   * zodat niets buiten het scherm valt. */
+  .modus-maand .mj td:nth-child(3),
+  .modus-jaar .mj td:nth-child(2) { display: none; }
 }
