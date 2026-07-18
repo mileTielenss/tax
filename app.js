@@ -271,55 +271,101 @@
     bewaarSims(sims);
   }
 
-  /* ---------- simulatiebalk ---------- */
+  /* ---------- startscherm met simulaties ---------- */
 
-  function verversSimSelect() {
-    var select = $("sim-select");
-    select.innerHTML = "";
-    Object.keys(sims.simulaties).forEach(function (naam) {
-      var optie = document.createElement("option");
-      optie.value = naam;
-      optie.textContent = naam;
-      select.appendChild(optie);
-    });
-    select.value = sims.actief;
+  // Bouwt de rekenmotor-invoer rechtstreeks uit een simulatie-state,
+  // zodat de lijstkaarten en de calculator dezelfde berekening delen.
+  function inputVanState(s) {
+    var t = s.toggles, v = s.vinken, w = s.waarden;
+    return {
+      cashloon: w.cashloon || 0,
+      vaa: {
+        wagen: t.wagen ? w["vaa-wagen"] || 0 : 0,
+        gsmInternetPc: t.overige ? w["vaa-gsm"] || 0 : 0,
+        renteBulletkrediet: t.overige ? w["vaa-rente"] || 0 : 0,
+        andere: t.overige ? w["vaa-andere"] || 0 : 0,
+        bewoning: t.woning && v["woning-handmatig"] ? w["woning-bedrag"] || 0 : 0
+      },
+      woning: t.woning && !v["woning-handmatig"] ? {
+        ki: w["woning-ki"] || 0,
+        privePct: (w["woning-pct"] || 0) / 100,
+        gemeubeld: !!v["woning-gemeubeld"],
+        verwarming: !!v["woning-verwarming"],
+        elektriciteit: !!v["woning-elektriciteit"]
+      } : { ki: 0 },
+      opties: t.opties
+        ? { bruto: w["opties-bruto"] || 0, beheerskost: w["opties-beheer"] || 0 }
+        : { bruto: 0, beheerskost: 0 },
+      maaltijdcheques: t.mc
+        ? { aantalPerMaand: w["mc-aantal"] || 0, zichtwaarde: w["mc-zichtwaarde"] || 0 }
+        : { aantalPerMaand: 0, zichtwaarde: 0 },
+      onkosten: { totaal: t.onkosten ? w["onk-totaal"] || 0 : 0 },
+      ipt: t.ipt
+        ? { jaarpremie: w["ipt-premie"] || 0, resterendeJaren: w["ipt-restjaren"] || 0, reedsOpgebouwd: w["ipt-opgebouwd"] || 0 }
+        : { jaarpremie: 0, resterendeJaren: 0, reedsOpgebouwd: 0 }
+    };
   }
 
-  function wisselSim(naam) {
-    stateUitDom();
+  function renderSimLijst() {
+    var p = Storage.resolveParams(huidigAanslagjaar());
+    var lijst = $("sim-lijst");
+    lijst.innerHTML = "";
+    Object.keys(sims.simulaties).forEach(function (naam) {
+      var s = sims.simulaties[naam];
+      var r = Engine.berekenPakket(inputVanState(s), p, { bijdragePrive: !!s.bijdragePrive });
+
+      var kaart = document.createElement("div");
+      kaart.className = "sim-kaart";
+
+      var info = document.createElement("button");
+      info.type = "button";
+      info.className = "sim-open";
+      info.innerHTML = "<strong>" + naam + "</strong><span>"
+        + formatEUR(r.nettoGecorrigeerdMaand) + " netto per maand · "
+        + formatEUR(r.nettoGecorrigeerd) + " per jaar · vennootschap "
+        + formatEUR(r.vennootschapCashUit) + "</span>";
+      info.addEventListener("click", function () { openSim(naam); });
+      kaart.appendChild(info);
+
+      var weg = document.createElement("button");
+      weg.type = "button";
+      weg.className = "sim-weg";
+      weg.title = "Simulatie verwijderen";
+      weg.textContent = "✕";
+      weg.addEventListener("click", function () {
+        if (!window.confirm('Simulatie "' + naam + '" verwijderen?')) return;
+        delete sims.simulaties[naam];
+        if (!Object.keys(sims.simulaties).length) {
+          sims.simulaties["Simulatie Kevin"] = presetKevin();
+          sims.simulaties["Simulatie Mile (woning)"] = presetMile();
+        }
+        if (sims.actief === naam) sims.actief = Object.keys(sims.simulaties)[0];
+        bewaarSims(sims);
+        renderSimLijst();
+      });
+      kaart.appendChild(weg);
+
+      lijst.appendChild(kaart);
+    });
+  }
+
+  function openSim(naam) {
     sims.actief = naam;
     bewaarSims(sims);
     stateNaarDom();
+    $("sim-naam").textContent = naam;
+    location.hash = "#sim";
     herreken();
   }
 
   function nieuweSim() {
-    var basis = "Nieuwe simulatie";
-    var naam = window.prompt("Naam van de nieuwe simulatie (start van Kevins simulatie):", basis);
+    var naam = window.prompt("Naam van de nieuwe simulatie:", "Nieuwe simulatie");
     if (!naam) return;
     naam = naam.trim();
     if (!naam || sims.simulaties[naam]) return;
-    stateUitDom();
     sims.simulaties[naam] = presetKevin();
-    sims.actief = naam;
     bewaarSims(sims);
-    verversSimSelect();
-    stateNaarDom();
-    herreken();
-  }
-
-  function verwijderSim() {
-    if (!window.confirm('Simulatie "' + sims.actief + '" verwijderen?')) return;
-    delete sims.simulaties[sims.actief];
-    if (!Object.keys(sims.simulaties).length) {
-      sims.simulaties["Simulatie Kevin"] = presetKevin();
-      sims.simulaties["Simulatie Mile (woning)"] = presetMile();
-    }
-    sims.actief = Object.keys(sims.simulaties)[0];
-    bewaarSims(sims);
-    verversSimSelect();
-    stateNaarDom();
-    herreken();
+    openSim(naam);
   }
 
   /* ---------- berekening + weergave ---------- */
@@ -629,10 +675,15 @@
 
   function toonView() {
     var beheer = location.hash === "#beheer";
-    $("view-calculator").classList.toggle("verborgen", beheer);
+    var calculator = location.hash === "#sim";
+    var start = !beheer && !calculator;
+    $("view-simulaties").classList.toggle("verborgen", !start);
+    $("view-calculator").classList.toggle("verborgen", !calculator);
     $("view-beheer").classList.toggle("verborgen", !beheer);
-    $("nav-calculator").classList.toggle("actief", !beheer);
+    $("nav-simulaties").classList.toggle("actief", !beheer);
     $("nav-beheer").classList.toggle("actief", beheer);
+    if (start) renderSimLijst();
+    if (calculator) { $("sim-naam").textContent = sims.actief; herreken(); }
     if (beheer) renderBeheer();
   }
 
@@ -649,14 +700,11 @@
 
     bouwInvoer();
     sims = laadSims();
-    verversSimSelect();
     $("modus-maand").classList.toggle("actief", modus === "maand");
     $("modus-jaar").classList.toggle("actief", modus === "jaar");
     stateNaarDom();
 
-    $("sim-select").addEventListener("change", function () { wisselSim(this.value); });
     $("sim-nieuw").addEventListener("click", nieuweSim);
-    $("sim-verwijder").addEventListener("click", verwijderSim);
     $("modus-maand").addEventListener("click", function () { zetModus("maand"); });
     $("modus-jaar").addEventListener("click", function () { zetModus("jaar"); });
     $("bijdrage-prive").addEventListener("change", herreken);

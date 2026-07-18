@@ -6,7 +6,7 @@
 var Engine = require("./engine.js");
 var Params = require("./params.js");
 
-var p = Params.BUILTIN_PARAMS["2026"];
+var p = Params.BUILTIN_PARAMS["2027"];
 var fouten = 0;
 
 function assertClose(naam, berekend, verwacht, tolerantie) {
@@ -40,9 +40,9 @@ assertClose("belastbare basis", r.belastbareBasis, 50000, 0.5);
 assertClose("forfaitaire beroepskosten (3%)", r.beroepskosten, 1500.00, 0.5);
 assertClose("sociale bijdrage per jaar", r.socialeBijdrage.jaar, 10654.85, 1);
 assertClose("netto belastbaar beroepsinkomen", r.nettoBelastbaar, 37845.02, 1);
-assertClose("staatsbelasting", r.staat.staatsbelasting, 10414.76, 1);
-assertClose("gemeentebelasting (Lommel 6%)", r.gemeentebelasting, 624.89, 1);
-assertClose("netto cash per jaar", r.nettoCash, 15441.35, 5);
+assertClose("staatsbelasting (AJ2027-schijven)", r.staat.staatsbelasting, 10251.76, 1);
+assertClose("gemeentebelasting (Lommel 6%)", r.gemeentebelasting, 615.11, 1);
+assertClose("netto cash per jaar", r.nettoCash, 15614.13, 5);
 assertClose("vennootschap cash uit", r.vennootschapCashUit, 37135.85, 5);
 
 // VAA mogen de cash nooit verlagen: netto = cash - PB, niet basis - PB.

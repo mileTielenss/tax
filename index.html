@@ -15,7 +15,7 @@
 <header>
   <h1>Loonpakket-calculator bedrijfsleider</h1>
   <nav>
-    <a href="#calculator" id="nav-calculator">Berekening</a>
+    <a href="#simulaties" id="nav-simulaties">Simulaties</a>
     <a href="#beheer" id="nav-beheer">Tarieven</a>
   </nav>
 </header>
@@ -25,13 +25,19 @@
 
 <main>
 
+  <!-- ===================== Simulaties (startscherm) ===================== -->
+  <section id="view-simulaties">
+    <div id="sim-lijst"></div>
+    <button id="sim-nieuw" type="button" class="sim-nieuw-knop">+ Nieuwe simulatie</button>
+    <p class="toelichting">Een nieuwe simulatie start van de simulatie van Kevin en is daarna vrij aanpasbaar.</p>
+  </section>
+
   <!-- ===================== Berekening ===================== -->
-  <section id="view-calculator">
+  <section id="view-calculator" class="verborgen">
 
     <div class="simbalk">
-      <select id="sim-select" title="Kies een simulatie"></select>
-      <button id="sim-nieuw" type="button" title="Nieuwe simulatie op basis van Kevins simulatie">+ Nieuw</button>
-      <button id="sim-verwijder" type="button">Verwijder</button>
+      <a href="#simulaties" class="terug">← Simulaties</a>
+      <strong id="sim-naam"></strong>
       <span class="modus">
         <button id="modus-maand" type="button">per maand</button><button id="modus-jaar" type="button">per jaar</button>
       </span>
