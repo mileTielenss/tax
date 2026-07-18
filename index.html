@@ -55,7 +55,7 @@
     </form>
 
     <div class="werkbalk">
-      <button id="print-knop" type="button">Bewaar als PDF / afdrukken</button>
+      <button id="print-knop" type="button">Loonbrief (PDF)</button>
     </div>
 
     <div id="uitkomst">
@@ -136,7 +136,7 @@
           <tr><td>Ruimte na reeds opgebouwd kapitaal</td><td id="p-ruimte"></td></tr>
           <tr class="totaalrij"><td>Indicatieve maximale jaarpremie</td><td id="p-premie"></td></tr>
         </table>
-        <p class="toelichting">Vuistregelraming. De exacte 80%-regel hangt af van loopbaan, backservice en verzekeringstarief — laat de definitieve premie door verzekeraar of boekhouder rekenen.</p>
+        <p class="toelichting">Vuistregelraming; de maximale premie is berekend met kapitalisatie van de stortingen (verwacht rendement instelbaar in Tarieven). De exacte 80%-regel hangt af van loopbaan, backservice en verzekeringstarief — laat de definitieve premie door verzekeraar of boekhouder rekenen.</p>
       </div>
 
       <div class="kaart kaart-inzicht">
@@ -179,6 +179,9 @@
 <footer>
   <p>Indicatief instrument — de definitieve aanslag ligt bij de boekhouder. Tarieven: zie <a href="#beheer">Tarieven</a>.</p>
 </footer>
+
+<!-- Eenvoudige loonbrief; enkel zichtbaar bij afdrukken / bewaren als PDF -->
+<section id="loonbrief"></section>
 
 <script src="params.js"></script>
 <script src="engine.js"></script>

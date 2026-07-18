@@ -89,13 +89,20 @@ assertClose("woongedeelte bij 100% privé (X-imus: 5.466,33)", w100.vaaWoning, 5
 var wGem = Engine.berekenWoning({ ki: 713, privePct: 0.75, gemeubeld: true }, p);
 assertClose("mark-up gemeubeld +2/3 (X-imus: 2.733,17)", wGem.markUpGemeubeld, 2733.17, 0.01);
 
-// Testgeval 5 — 80%-regel IPT op bruto 32.460 (cash + gewone VAA)
+// Testgeval 5 — 80%-regel IPT op bruto 32.460 (cash + gewone VAA);
+// premie via kapitalisatie aan 4,7% (impliciet rendement X-imus prognose)
 console.log("");
 console.log("Testgeval 5: 80%-regel IPT");
 assertClose("maximale aanvullende rente", k.ipt80.maxAanvullendeRente, 17853, 0.5);
 assertClose("maximaal kapitaal (x 13,43)", k.ipt80.maxKapitaal, 239765.79, 1);
-assertClose("indicatieve jaarpremie (20 jaar)", k.ipt80.indicatieveJaarpremie, 11988.29, 1);
+assertClose("indicatieve jaarpremie (20 jaar, 4,7%)", k.ipt80.indicatieveJaarpremie, 7484.09, 1);
 assertTrue("premie 0 zit binnen de ruimte", !k.ipt80.premieBovenRuimte);
+
+// X-imus consistentie: bij 48.000 bruto en 38,75 jaar moet de premie van
+// 3.133,44 uit het verslag binnen de indicatieve ruimte vallen.
+var ximusIpt = Engine.berekenIpt80(48000, { jaarpremie: 3133.44, resterendeJaren: 38.75, reedsOpgebouwd: 0 }, p);
+assertClose("max premie bij 48.000 en 38,75 jaar", ximusIpt.indicatieveJaarpremie, 3381.24, 1);
+assertTrue("X-imus premie 3.133,44 zit binnen de ruimte", !ximusIpt.premieBovenRuimte);
 
 console.log("");
 if (fouten > 0) {

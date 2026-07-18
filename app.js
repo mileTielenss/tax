@@ -119,6 +119,9 @@
     s.waarden["opties-bruto"] = 0;
     s.waarden["opties-beheer"] = 0;
     s.waarden["onk-totaal"] = 0;
+    // IPT zoals in het X-imus verslag: 3.133,44/jaar tot de pensioenleeftijd.
+    s.waarden["ipt-premie"] = 3133.44;
+    s.waarden["ipt-restjaren"] = 39;
     return s;
   }
 
@@ -524,7 +527,67 @@
 
     toonWaarschuwingen(r, input, p);
     toonIjkcontrole(p);
+    vulLoonbrief(r, input, p);
     stateUitDom();
+  }
+
+  /* ---------- loonbrief (afdruk / PDF) ---------- */
+
+  function vulLoonbrief(r, input, p) {
+    var bijdragePrive = r.options.bijdragePrive;
+    function rij(label, jaar, klasse) {
+      if (!jaar && klasse !== "lb-tot" && klasse !== "lb-eind") return "";
+      return "<tr" + (klasse ? ' class="' + klasse + '"' : "") + "><td>" + label + "</td><td>" + formatEUR(jaar / 12) + "</td><td>" + formatEUR(jaar) + "</td></tr>";
+    }
+    function sectie(titel) {
+      return '<tr class="lb-sectie"><td colspan="3">' + titel + "</td></tr>";
+    }
+
+    var html = '<div class="lb-kop"><h1>Loonbrief — ' + sims.actief + "</h1><p>"
+      + Params.AANSLAGJAAR_LABELS[huidigAanslagjaar()]
+      + " · opgemaakt " + new Date().toLocaleDateString("nl-BE")
+      + " · indicatieve simulatie</p></div>";
+
+    html += '<table class="lb-tabel"><tr class="lb-kolomkop"><td></td><td>per maand</td><td>per jaar</td></tr>';
+
+    html += sectie("Bezoldiging en voordelen alle aard");
+    html += rij("Cash brutoloon", r.input.cashloon);
+    html += rij("VAA bedrijfswagen", input.vaa.wagen);
+    html += rij("VAA woning, verwarming & elektriciteit", r.woning.totaal + (input.vaa.bewoning || 0));
+    html += rij("VAA gsm, internet & pc", input.vaa.gsmInternetPc);
+    html += rij("VAA rente bulletkrediet", input.vaa.renteBulletkrediet);
+    html += rij("VAA andere", input.vaa.andere);
+    html += rij("VAA aandelenopties", r.opties.vaa);
+    html += rij("Belastbare basis", r.belastbareBasis, "lb-tot");
+
+    html += sectie("Inhoudingen en vergoedingen");
+    if (bijdragePrive) html += rij("Sociale bijdrage (privé gedragen)", -(r.socialeBijdrage.jaar - r.opties.sbDelta));
+    html += rij("Belasting (staat + gemeente, zonder optiedeel)", -r.personenbelastingZonderOpties);
+    html += rij("Eigen bijdrage maaltijdcheques", -r.maaltijdcheques.eigenBijdrage);
+    html += rij("Onkostenvergoedingen (belastingvrij)", r.onkostenTotaal);
+    html += rij("Netto cash op de rekening", r.nettoCash, "lb-tot");
+    html += rij("Aandelenopties netto (bruto − heffing − verkoopkost)", r.opties.netto);
+    html += rij("Nettowaarde maaltijdcheques", r.maaltijdcheques.nettowaarde);
+    html += rij("Netto gecorrigeerd", r.nettoGecorrigeerd, "lb-eind");
+
+    html += sectie("Kosten vennootschap");
+    html += rij("Cash brutoloon", r.input.cashloon);
+    if (!bijdragePrive) html += rij("Sociale bijdrage zelfstandige (" + formatEUR(r.socialeBijdrage.kwartaal) + "/kwartaal)", r.socialeBijdrage.jaar);
+    html += rij("Onkostenvergoedingen", r.onkostenTotaal);
+    html += rij("Maaltijdcheques: werkgeversdeel", r.maaltijdcheques.werkgeversDeel);
+    html += rij("Maaltijdcheques: beheerskost", r.maaltijdcheques.beheerskost);
+    html += rij("Aandelenopties: bruto toekenning", r.opties.bruto);
+    html += rij("Aandelenopties: beheerskost", r.opties.beheerskost);
+    html += rij("IPT-premie", input.ipt.jaarpremie);
+    html += rij("Totale cash out vennootschap", r.vennootschapCashUit, "lb-eind");
+    html += "</table>";
+
+    if (input.ipt.jaarpremie > 0 || r.ipt80.indicatieveJaarpremie > 0) {
+      html += '<p class="lb-voet">IPT: geplande premie ' + formatEUR(input.ipt.jaarpremie) + " per jaar; indicatieve maximale premie volgens de 80%-regel " + formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar (max. eindkapitaal " + formatEUR(r.ipt80.maxKapitaal) + ").</p>";
+    }
+    html += '<p class="lb-voet">Indicatieve simulatie, geen officieel loondocument. Voordelen alle aard zijn fiscale forfaits en komen niet als cash binnen; de werkelijke kosten van wagen, gsm of woning staan los van dit overzicht. De definitieve aanslag ligt bij de boekhouder.</p>';
+
+    $("loonbrief").innerHTML = html;
   }
 
   // Toont of de gebruikte woningparameters overeenkomen met het
