@@ -37,16 +37,15 @@
 
     <div class="simbalk">
       <a href="#simulaties" class="terug">← Simulaties</a>
-      <strong id="sim-naam"></strong>
       <span class="modus">
         <button id="modus-maand" type="button">per maand</button><button id="modus-jaar" type="button">per jaar</button>
       </span>
+      <strong id="sim-naam"></strong>
     </div>
 
     <form id="invoer" autocomplete="off">
       <div class="veldrij">
-        <label for="aanslagjaar">Aanslagjaar</label>
-        <select id="aanslagjaar"></select>
+        <select id="aanslagjaar" aria-label="Aanslagjaar" class="volle-breedte"></select>
       </div>
       <label class="checkboxrij">
         <input id="bijdrage-prive" type="checkbox">
