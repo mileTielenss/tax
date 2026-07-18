@@ -217,8 +217,15 @@
 
     var nettoGecorrigeerd = nettoCash + (optiesBruto > 0 ? optiesNetto : 0) + mc.nettowaarde;
 
+    // De rente op het bulletkrediet is een echte kasstroom van de
+    // vennootschap: zij betaalt de intresten en precies dat bedrag wordt
+    // als VAA aangerekend. De andere VAA's blijven forfaits zonder
+    // rechtstreekse kasstroom in dit overzicht.
+    var renteBulletkrediet = vaa.renteBulletkrediet || 0;
+
     var vennootschapCashUit = cashloon
       + (bijdragePrive ? 0 : met.socialeBijdrage.jaar)
+      + renteBulletkrediet
       + (onkosten.totaal || 0)
       + mc.werkgeversDeel + mc.beheerskost
       + optiesBruto + (opties.beheerskost || 0)

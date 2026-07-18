@@ -3,7 +3,7 @@
  * Service worker: alles voorgecachet, cache-first. Nieuwe release =
  * CACHE-versie ophogen; activate ruimt oude caches op.
  */
-var CACHE = "mtrex-loon-v10";
+var CACHE = "mtrex-loon-v11";
 var ASSETS = [
   "./",
   "./index.html",
