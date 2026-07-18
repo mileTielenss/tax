@@ -1,119 +1,101 @@
+/* Huisstijl geïnspireerd op Liantis: diep paars, lila achtergronden,
+ * witte afgeronde kaarten en pill-knoppen. */
 :root {
-  --groen: #14532d;
-  --groen-licht: #dcfce7;
-  --inkt: #1c1c1c;
-  --grijs: #6b7280;
-  --rand: #d1d5db;
-  --achtergrond: #f5f6f4;
+  --paars: #532778;
+  --paars-mid: #7843a5;
+  --lila: #e1c1ff;
+  --lila-zacht: #f9f2ff;
+  --inkt: #2c3e50;
+  --grijs: #64748b;
+  --rand: #e7ddf2;
+  --wit: #ffffff;
   --waarschuwing: #b91c1c;
   --waarschuwing-achtergrond: #fee2e2;
   --verify: #b45309;
   --verify-achtergrond: #fef3c7;
+  --schaduw: 0 2px 10px rgba(83, 39, 120, 0.08);
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
   color: var(--inkt);
-  background: var(--achtergrond);
-  line-height: 1.45;
+  background: var(--lila-zacht);
+  line-height: 1.5;
 }
+
+/* ---- header ---- */
 
 header {
-  background: var(--groen);
-  color: #fff;
-  padding: 0.9rem 1rem;
+  background: var(--wit);
+  padding: 1rem 1.25rem;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 1.25rem;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  box-shadow: var(--schaduw);
 }
 
-header h1 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--paars);
+  letter-spacing: -0.01em;
+}
 
+nav { display: flex; gap: 0.4rem; }
 nav a {
-  color: #cfe9d9;
+  color: var(--paars);
   text-decoration: none;
-  margin-right: 1rem;
-  padding-bottom: 2px;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92rem;
 }
-nav a.actief { color: #fff; border-bottom: 2px solid #fff; }
+nav a:hover { background: var(--lila-zacht); }
+nav a.actief { background: var(--paars); color: #fff; }
 
-main { max-width: 46rem; margin: 0 auto; padding: 1rem; }
+main { max-width: 46rem; margin: 0 auto; padding: 1.25rem 1rem; }
 
 .verborgen { display: none; }
 
 .banner {
   background: var(--waarschuwing-achtergrond);
   color: var(--waarschuwing);
-  border-bottom: 1px solid var(--waarschuwing);
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1.25rem;
   font-weight: 600;
 }
-
-/* ---- invoer ---- */
-
-fieldset {
-  border: 1px solid var(--rand);
-  border-radius: 8px;
-  margin: 0.75rem 0;
-  padding: 0.5rem 0.9rem 0.75rem;
-  background: #fff;
+.banner-info {
+  background: var(--verify-achtergrond);
+  color: var(--verify);
+  font-weight: 500;
 }
-legend { font-weight: 600; padding: 0 0.35rem; }
 
-.veldrij {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin: 0.35rem 0;
-}
-.veldrij label { flex: 1; min-width: 0; font-size: 0.92rem; }
-.veldrij input, .veldrij select {
-  width: 8.5rem;
-  flex-shrink: 0;
-  padding: 0.4rem 0.5rem;
-  font-size: 1rem;
-  text-align: right;
-  border: 1px solid var(--rand);
-  border-radius: 6px;
-  background: #fff;
-}
-.veldrij select { text-align: left; width: auto; }
-.veldrij input:focus { outline: 2px solid var(--groen); border-color: var(--groen); }
+/* ---- knoppen ---- */
 
-.checkboxrij { display: block; margin: 0.75rem 0; color: var(--inkt); }
-
-/* simulatiebalk */
-.simbalk {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin: 0.25rem 0 0.75rem;
+button {
+  font: inherit;
+  padding: 0.45rem 1rem;
+  border: 1.5px solid var(--paars);
+  border-radius: 999px;
+  background: var(--wit);
+  color: var(--paars);
+  font-weight: 600;
+  cursor: pointer;
 }
-.simbalk select {
-  flex: 1 1 10rem;
-  min-width: 0;
-  padding: 0.45rem 0.5rem;
-  font-size: 1rem;
-  border: 1px solid var(--rand);
-  border-radius: 6px;
-  background: #fff;
-}
-.simbalk .terug { color: var(--groen); text-decoration: none; font-weight: 600; }
-.simbalk .terug:hover { text-decoration: underline; }
-#sim-naam { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button:hover { background: var(--lila-zacht); }
+button.klein { padding: 0.15rem 0.7rem; font-size: 0.8rem; }
 
-/* startscherm met simulaties */
+/* ---- startscherm met simulaties ---- */
+
 .sim-kaart {
   display: flex;
   align-items: stretch;
-  gap: 0.4rem;
-  margin: 0.6rem 0;
+  gap: 0.5rem;
+  margin: 0.7rem 0;
 }
 .sim-open {
   flex: 1;
@@ -121,111 +103,196 @@ legend { font-weight: 600; padding: 0 0.35rem; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.25rem;
+  gap: 0.3rem;
   text-align: left;
-  padding: 0.9rem 1rem;
-  background: #fff;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
+  padding: 1.05rem 1.2rem;
+  background: var(--wit);
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  box-shadow: var(--schaduw);
   cursor: pointer;
+  font-weight: 400;
+  color: var(--inkt);
 }
-.sim-open:hover { border-color: var(--groen); }
-.sim-open strong { font-size: 1.05rem; color: var(--groen); }
+.sim-open:hover { border-color: var(--paars-mid); background: var(--wit); }
+.sim-open strong { font-size: 1.08rem; color: var(--paars); }
 .sim-open span { color: var(--grijs); font-size: 0.85rem; }
 .sim-weg {
   flex: 0 0 auto;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
-  background: #fff;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  background: var(--wit);
+  box-shadow: var(--schaduw);
   color: var(--grijs);
-  padding: 0 0.9rem;
-  cursor: pointer;
+  padding: 0 1rem;
 }
-.sim-weg:hover { color: var(--waarschuwing); border-color: var(--waarschuwing); }
+.sim-weg:hover { color: var(--waarschuwing); border-color: var(--waarschuwing); background: var(--wit); }
 .sim-nieuw-knop {
   display: block;
   width: 100%;
-  margin-top: 1rem;
-  padding: 0.9rem;
+  margin-top: 1.1rem;
+  padding: 0.95rem;
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
-  background: var(--groen);
+  background: var(--paars);
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 999px;
 }
-.sim-nieuw-knop:hover { opacity: 0.92; color: #fff; }
+.sim-nieuw-knop:hover { background: var(--paars-mid); }
 
-.modus { display: inline-flex; margin-left: auto; }
-.modus button { border-radius: 0; border-right-width: 0; }
-.modus button:first-child { border-radius: 6px 0 0 6px; }
-.modus button:last-child { border-radius: 0 6px 6px 0; border-right-width: 1px; }
-.modus button.actief { background: var(--groen); color: #fff; border-color: var(--groen); }
+/* ---- simulatiebalk in de calculator ---- */
 
-.banner-info {
-  background: var(--verify-achtergrond);
-  color: var(--verify);
-  border-bottom: 1px solid var(--verify);
-  font-weight: 500;
+.simbalk {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0.25rem 0 1rem;
 }
+.simbalk .terug {
+  color: var(--paars);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: var(--wit);
+  box-shadow: var(--schaduw);
+}
+.simbalk .terug:hover { background: var(--lila-zacht); }
+#sim-naam {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--paars);
+}
+.modus { display: inline-flex; margin-left: auto; background: var(--wit); border-radius: 999px; box-shadow: var(--schaduw); padding: 3px; }
+.modus button { border: none; border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.88rem; background: transparent; }
+.modus button.actief { background: var(--paars); color: #fff; }
+
+/* ---- invoer ---- */
+
+fieldset {
+  border: none;
+  border-radius: 16px;
+  margin: 0.8rem 0;
+  padding: 0.8rem 1.1rem 0.9rem;
+  background: var(--wit);
+  box-shadow: var(--schaduw);
+}
+legend {
+  font-weight: 700;
+  color: var(--paars);
+  padding: 0 0.4rem;
+  background: var(--wit);
+  border-radius: 999px;
+}
+
+.veldrij {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.4rem 0;
+}
+.veldrij label { flex: 1; min-width: 0; font-size: 0.92rem; }
+.veldrij input, .veldrij select {
+  width: 8.5rem;
+  flex-shrink: 0;
+  padding: 0.45rem 0.65rem;
+  font-size: 1rem;
+  text-align: right;
+  border: 1.5px solid var(--rand);
+  border-radius: 10px;
+  background: var(--wit);
+  color: var(--inkt);
+}
+.veldrij select { text-align: left; width: auto; }
+.veldrij input:focus, .veldrij select:focus {
+  outline: none;
+  border-color: var(--paars-mid);
+  box-shadow: 0 0 0 3px var(--lila);
+}
+
+.checkboxrij { display: block; margin: 0.8rem 0.2rem; }
+
+.toggle-label { font-weight: 600; cursor: pointer; color: var(--inkt); }
+.toggle-label input { margin-right: 0.4rem; accent-color: var(--paars); }
+input[type="checkbox"] { accent-color: var(--paars); width: 1.05rem; height: 1.05rem; }
+fieldset .veldrij .toggle-label { font-weight: 400; }
+legend .toggle-label { color: var(--paars); }
+
+.werkbalk { display: flex; justify-content: flex-end; margin: 0.9rem 0; }
 
 /* ---- uitkomst ---- */
 
 .kaart {
-  background: #fff;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
-  padding: 0.9rem 1rem;
-  margin: 0.75rem 0;
+  background: var(--wit);
+  border: none;
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  margin: 0.8rem 0;
+  box-shadow: var(--schaduw);
 }
-.kaart h2 { margin: 0 0 0.5rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--grijs); }
+.kaart h2 {
+  margin: 0 0 0.55rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--paars-mid);
+  font-weight: 700;
+}
 
-.kaart-netto { background: var(--groen); color: #fff; border-color: var(--groen); }
-.kaart-netto h2 { color: var(--groen-licht); }
-.groot { margin: 0; font-size: 2.1rem; font-weight: 700; }
+.kaart-netto { background: var(--paars); color: #fff; }
+.kaart-netto h2 { color: var(--lila); }
+.groot { margin: 0; font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; }
 .middel { margin: 0.15rem 0 0; font-size: 1.15rem; }
-.kaart-netto .toelichting { color: var(--groen-licht); }
+.kaart-netto .toelichting { color: var(--lila); }
 
 .toelichting { font-size: 0.85rem; color: var(--grijs); margin: 0.5rem 0 0; }
 
 .kaart table { width: 100%; border-collapse: collapse; }
-.kaart td { padding: 0.25rem 0; }
+.kaart td { padding: 0.28rem 0; }
 .kaart td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.totaalrij td { border-top: 1.5px solid var(--rand); font-weight: 700; padding-top: 0.45rem; }
+.kaart-netto .totaalrij td { border-color: rgba(255, 255, 255, 0.3); }
+.detailrij td { color: var(--grijs); font-size: 0.85rem; }
+.kaart-netto .detailrij td { color: var(--lila); }
+.tussenkop { font-weight: 700; padding-top: 0.6rem; color: var(--paars-mid); }
 
-/* maand/jaar-tabellen: laatste twee kolommen rechts uitgelijnd */
 .mj td:nth-child(2), .mj td:nth-child(3) {
   text-align: right;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   padding-left: 0.75rem;
 }
-.mj .kopcel td { color: var(--grijs); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
-.lichte-tabel { margin-top: 0.6rem; }
-.kaart-netto .lichte-tabel td { color: var(--groen-licht); border-color: rgba(255,255,255,0.25); }
-.totaalrij td { border-top: 1px solid var(--rand); font-weight: 700; padding-top: 0.4rem; }
-.detailrij td { color: var(--grijs); font-size: 0.85rem; }
-.tussenkop { font-weight: 600; padding-top: 0.6rem; color: var(--grijs); }
+.mj .kopcel td { color: var(--grijs); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.lichte-tabel { margin-top: 0.7rem; }
+.kaart-netto .lichte-tabel td { color: var(--lila); border-color: rgba(255, 255, 255, 0.3); }
 
-.kaart-inzicht { background: var(--groen-licht); border-color: var(--groen); }
-.kaart-inzicht h2 { color: var(--groen); }
+.kaart-inzicht { background: var(--lila-zacht); box-shadow: none; border: 1.5px solid var(--lila); }
+.kaart-inzicht h2 { color: var(--paars); }
 .kaart-inzicht p { margin: 0.3rem 0; }
 
-details.kaart summary { cursor: pointer; font-weight: 600; }
+details.kaart summary { cursor: pointer; font-weight: 700; color: var(--paars); }
 details.kaart[open] summary { margin-bottom: 0.5rem; }
 
 /* ---- beheerscherm ---- */
 
-.beheer-categorie { margin: 1rem 0; }
-.beheer-categorie h2 { font-size: 1rem; margin: 0 0 0.25rem; }
-.beheer-categorie .bronlink { font-size: 0.85rem; }
+.beheer-categorie { margin: 1.2rem 0; }
+.beheer-categorie h2 { font-size: 1rem; margin: 0 0 0.25rem; color: var(--paars); }
+.beheer-categorie .bronlink { font-size: 0.85rem; margin: 0 0 0.5rem; }
+.beheer-categorie .bronlink a { color: var(--paars-mid); word-break: break-all; }
 
 .beheer-veld {
-  background: #fff;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
-  padding: 0.6rem 0.8rem;
-  margin: 0.4rem 0;
+  background: var(--wit);
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--schaduw);
+  padding: 0.65rem 0.9rem;
+  margin: 0.45rem 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -234,11 +301,16 @@ details.kaart[open] summary { margin-bottom: 0.5rem; }
 .beheer-veld .veldnaam { flex: 1 1 14rem; }
 .beheer-veld input {
   width: 9rem;
-  padding: 0.4rem 0.5rem;
+  padding: 0.4rem 0.6rem;
   font-size: 1rem;
   text-align: right;
-  border: 1px solid var(--rand);
-  border-radius: 6px;
+  border: 1.5px solid var(--rand);
+  border-radius: 10px;
+}
+.beheer-veld input:focus {
+  outline: none;
+  border-color: var(--paars-mid);
+  box-shadow: 0 0 0 3px var(--lila);
 }
 .beheer-veld .eenheid { color: var(--grijs); width: 1.2rem; }
 .beheer-veld .meta { flex-basis: 100%; font-size: 0.78rem; color: var(--grijs); }
@@ -247,38 +319,30 @@ details.kaart[open] summary { margin-bottom: 0.5rem; }
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 0.1rem 0.4rem;
+  padding: 0.12rem 0.5rem;
   border-radius: 999px;
   vertical-align: middle;
 }
 .badge-verify { background: var(--verify-achtergrond); color: var(--verify); }
-.badge-override { background: var(--groen-licht); color: var(--groen); }
+.badge-override { background: var(--lila); color: var(--paars); }
 
-button {
-  font: inherit;
-  padding: 0.45rem 0.8rem;
-  border: 1px solid var(--rand);
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-}
-button:hover { border-color: var(--groen); color: var(--groen); }
-button.klein { padding: 0.15rem 0.5rem; font-size: 0.8rem; }
-
-.ijk-ok { color: var(--groen); font-weight: 600; }
+.ijk-ok { color: #15803d; font-weight: 700; }
 .ijk-fout { color: var(--waarschuwing); font-weight: 700; }
 
-footer { max-width: 46rem; margin: 0 auto; padding: 0 1rem 2rem; color: var(--grijs); font-size: 0.85rem; }
+a { color: var(--paars-mid); }
 
-.toggle-label { font-weight: 600; cursor: pointer; }
-.toggle-label input { margin-right: 0.35rem; }
-fieldset .veldrij .toggle-label { font-weight: 400; }
-.werkbalk { display: flex; justify-content: flex-end; margin: 0.75rem 0; }
+footer {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+  color: var(--grijs);
+  font-size: 0.85rem;
+}
 
 @media print {
-  header nav, .werkbalk, footer, button { display: none !important; }
+  header nav, .werkbalk, footer, button, .simbalk { display: none !important; }
   body { background: #fff; }
-  .kaart { break-inside: avoid; border-color: #999; }
+  .kaart { break-inside: avoid; box-shadow: none; border: 1px solid #bbb; }
   .kaart-netto { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   details.kaart { display: none; }
 }
