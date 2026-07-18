@@ -489,6 +489,8 @@
     zetMJ("v-bruto", r.input.cashloon);
     $("v-sb-rij").style.display = bijdragePrive ? "none" : "";
     zetMJ("v-sb", bijdragePrive ? 0 : r.socialeBijdrage.jaar);
+    $("v-rente-rij").style.display = input.vaa.renteBulletkrediet > 0 ? "" : "none";
+    zetMJ("v-rente", input.vaa.renteBulletkrediet);
     zetMJ("v-onkosten", r.onkostenTotaal);
     zetMJ("v-mcwg", r.maaltijdcheques.werkgeversDeel);
     zetMJ("v-mcbeheer", r.maaltijdcheques.beheerskost);
@@ -577,6 +579,7 @@
     html += sectie("Kosten vennootschap");
     html += rij("Cash brutoloon", r.input.cashloon);
     if (!bijdragePrive) html += rij("Sociale bijdrage zelfstandige (" + formatEUR(r.socialeBijdrage.kwartaal) + "/kwartaal)", r.socialeBijdrage.jaar);
+    html += rij("Rente bulletkrediet (= VAA)", input.vaa.renteBulletkrediet);
     html += rij("Onkostenvergoedingen", r.onkostenTotaal);
     html += rij("Maaltijdcheques: werkgeversdeel", r.maaltijdcheques.werkgeversDeel);
     html += rij("Maaltijdcheques: beheerskost", r.maaltijdcheques.beheerskost);
