@@ -255,6 +255,11 @@ legend .toggle-label { color: var(--paars); }
 
 .toelichting { font-size: 0.85rem; color: var(--grijs); margin: 0.5rem 0 0; }
 
+.groot-paars { margin: 0; font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; color: var(--paars); }
+.middel-grijs { margin: 0.1rem 0 0.5rem; color: var(--grijs); }
+.kaart details summary { cursor: pointer; font-weight: 600; color: var(--paars-mid); font-size: 0.9rem; }
+.kaart details[open] summary { margin-bottom: 0.4rem; }
+
 .kaart table { width: 100%; border-collapse: collapse; }
 .kaart td { padding: 0.28rem 0; }
 .kaart td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
