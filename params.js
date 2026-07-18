@@ -10,20 +10,20 @@
 (function (root) {
 
   var BUILTIN_PARAMS = {
-    "2026": {
-      // Personenbelasting, aanslagjaar 2026 (inkomsten 2025)
-      "pb.schijf1.tot": 16320,
+    "2027": {
+      // Personenbelasting, aanslagjaar 2027 (inkomsten 2026)
+      "pb.schijf1.tot": 16720,
       "pb.schijf1.tarief": 0.25,
-      "pb.schijf2.tot": 28800,
+      "pb.schijf2.tot": 29510,
       "pb.schijf2.tarief": 0.40,
-      "pb.schijf3.tot": 49840,
+      "pb.schijf3.tot": 51070,
       "pb.schijf3.tarief": 0.45,
       "pb.schijf4.tarief": 0.50,
-      "pb.belastingvrijeSom": 10910,
+      "pb.belastingvrijeSom": 11180,
 
       // Forfaitaire beroepskosten bedrijfsleider (3%, geplafonneerd)
       "kosten.pct": 0.03,
-      "kosten.plafond": 3130,
+      "kosten.plafond": 3200,
 
       // Sociale bijdragen zelfstandigen, bijdragejaar 2026 (RSVZ)
       "sb.tariefSchijf1": 0.205,
@@ -62,12 +62,11 @@
       "ipt.loopbaanJaren": 40,
       "ipt.omzettingsCoefficient": 13.43
     }
-    // "2027": nog toe te voegen zodra de geindexeerde bedragen AJ2027
-    // (inkomsten 2026) door FOD Financien gepubliceerd zijn.
+    // Nieuw aanslagjaar: blok kopieren, sleutel en bedragen aanpassen.
   };
 
   var BRON = {
-    pb: "https://www.practicali.be/blog/geindexeerde-bedragen-aj-2026",
+    pb: "https://www.practicali.be/blog/geindexeerde-bedragen-aj-2027",
     pbOfficieel: "https://financien.belgium.be",
     sb: "https://www.liantis.be/sites/default/files/uploads/bijdragetabel_2026_1225_NL_digitaal.pdf",
     sbOfficieel: "https://www.rsvz.be/nl/faq/hoeveel-sociale-bijdragen-moet-ik-betalen",
@@ -91,7 +90,7 @@
     { key: "pb.belastingvrijeSom", label: "Belastingvrije som (basisbedrag)", categorie: "Personenbelasting", type: "eur", bron: BRON.pb, verify: false },
 
     { key: "kosten.pct", label: "Forfait bedrijfsleider", categorie: "Beroepskosten", type: "pct", bron: BRON.pb, verify: false },
-    { key: "kosten.plafond", label: "Plafond forfait (AJ2026: 3.130)", categorie: "Beroepskosten", type: "eur", bron: BRON.pb, verify: true },
+    { key: "kosten.plafond", label: "Plafond forfait (AJ2027: 3.200)", categorie: "Beroepskosten", type: "eur", bron: BRON.pb, verify: true },
 
     { key: "sb.tariefSchijf1", label: "Tarief schijf 1", categorie: "Sociale bijdragen", type: "pct", bron: BRON.sbOfficieel, verify: false },
     { key: "sb.tariefSchijf2", label: "Tarief schijf 2", categorie: "Sociale bijdragen", type: "pct", bron: BRON.sbOfficieel, verify: false },
@@ -123,7 +122,7 @@
   ];
 
   var AANSLAGJAAR_LABELS = {
-    "2026": "Aanslagjaar 2026 (inkomsten 2025)"
+    "2027": "Aanslagjaar 2027 (inkomsten 2026)"
   };
 
   var Params = {

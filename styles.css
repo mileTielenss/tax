@@ -104,6 +104,59 @@ legend { font-weight: 600; padding: 0 0.35rem; }
   border-radius: 6px;
   background: #fff;
 }
+.simbalk .terug { color: var(--groen); text-decoration: none; font-weight: 600; }
+.simbalk .terug:hover { text-decoration: underline; }
+#sim-naam { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* startscherm met simulaties */
+.sim-kaart {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  margin: 0.6rem 0;
+}
+.sim-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sim-open:hover { border-color: var(--groen); }
+.sim-open strong { font-size: 1.05rem; color: var(--groen); }
+.sim-open span { color: var(--grijs); font-size: 0.85rem; }
+.sim-weg {
+  flex: 0 0 auto;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--grijs);
+  padding: 0 0.9rem;
+  cursor: pointer;
+}
+.sim-weg:hover { color: var(--waarschuwing); border-color: var(--waarschuwing); }
+.sim-nieuw-knop {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--groen);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sim-nieuw-knop:hover { opacity: 0.92; color: #fff; }
+
 .modus { display: inline-flex; margin-left: auto; }
 .modus button { border-radius: 0; border-right-width: 0; }
 .modus button:first-child { border-radius: 6px 0 0 6px; }
