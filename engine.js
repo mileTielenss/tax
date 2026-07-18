@@ -98,15 +98,18 @@
     var ki = woning.ki || 0;
     var privePct = woning.privePct === undefined ? 1 : woning.privePct;
     var vaaWoning = ki * p["vaa.kiIndexatie"] * (100 / 60) * p["vaa.woningFactor"] * privePct;
+    // Gemeubelde woning: het woongedeelte wordt met 2/3 verhoogd.
+    var markUpGemeubeld = woning.gemeubeld ? vaaWoning * (2 / 3) : 0;
     var vaaVerwarming = woning.verwarming ? p["vaa.verwarmingForfait"] : 0;
     var vaaElektriciteit = woning.elektriciteit ? p["vaa.elektriciteitForfait"] : 0;
     return {
       ki: ki,
       privePct: privePct,
       vaaWoning: vaaWoning,
+      markUpGemeubeld: markUpGemeubeld,
       vaaVerwarming: vaaVerwarming,
       vaaElektriciteit: vaaElektriciteit,
-      totaal: vaaWoning + vaaVerwarming + vaaElektriciteit
+      totaal: vaaWoning + markUpGemeubeld + vaaVerwarming + vaaElektriciteit
     };
   }
 

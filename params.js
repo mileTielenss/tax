@@ -38,11 +38,13 @@
       "gemeente.naam": "Lommel",
       "gemeente.opcentiemenPct": 0.06,
 
-      // Woning en energie via de vennootschap (VAA, inkomstenjaar 2025)
-      "vaa.kiIndexatie": 2.2446,
+      // Woning en energie via de vennootschap (VAA, inkomstenjaar 2026,
+      // conform het X-imus analyseverslag: KI 713 x 75% x 2,3 x 100/60 x 2
+      // = 4.099,75 + forfaits = 7.939,75)
+      "vaa.kiIndexatie": 2.3,
       "vaa.woningFactor": 2,
-      "vaa.verwarmingForfait": 2500,
-      "vaa.elektriciteitForfait": 1250,
+      "vaa.verwarmingForfait": 2560,
+      "vaa.elektriciteitForfait": 1280,
 
       // Maaltijdcheques (vrijgesteld mits minimale eigen bijdrage en max zichtwaarde)
       "mc.minEigenBijdrage": 1.09,

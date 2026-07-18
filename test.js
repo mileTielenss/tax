@@ -75,17 +75,19 @@ assertTrue("netto gecorrigeerd = netto cash + opties netto + MC-waarde",
 var verwachtVennootschap = 30000 + k.socialeBijdrage.jaar + 3011.88 + 2138.40 + 180 + 18360 + 600;
 assertClose("vennootschap cash uit (samenstelling)", k.vennootschapCashUit, verwachtVennootschap, 0.01);
 
-// Testgeval 4 — woning uit kadastraal inkomen:
-// KI 1.000 x 2,2446 x 100/60 x 2 = 7.482, plus forfaits verwarming/elektriciteit
+// Testgeval 4 — woning uit kadastraal inkomen, conform het X-imus verslag:
+// KI 713 x 75% x 2,3 x 100/60 x 2 = 4.099,75; + forfaits 2.560/1.280 = 7.939,75
 console.log("");
-console.log("Testgeval 4: VAA woning en energie uit KI");
-var w = Engine.berekenWoning({ ki: 1000, privePct: 1, verwarming: true, elektriciteit: true }, p);
-assertClose("VAA woning (KI 1.000, 100% privé)", w.vaaWoning, 7482.00, 0.01);
-assertClose("forfait verwarming", w.vaaVerwarming, 2500, 0.01);
-assertClose("forfait elektriciteit", w.vaaElektriciteit, 1250, 0.01);
-assertClose("totaal woning & energie", w.totaal, 11232.00, 0.01);
-var wHalf = Engine.berekenWoning({ ki: 1000, privePct: 0.5 }, p);
-assertClose("VAA woning bij 50% privégedeelte", wHalf.vaaWoning, 3741.00, 0.01);
+console.log("Testgeval 4: VAA woning en energie uit KI (X-imus)");
+var w = Engine.berekenWoning({ ki: 713, privePct: 0.75, verwarming: true, elektriciteit: true }, p);
+assertClose("woongedeelte (KI 713, 75% privé)", w.vaaWoning, 4099.75, 0.01);
+assertClose("forfait verwarming 2026", w.vaaVerwarming, 2560, 0.01);
+assertClose("forfait elektriciteit 2026", w.vaaElektriciteit, 1280, 0.01);
+assertClose("totaal VAA woning (X-imus: 7.939,75)", w.totaal, 7939.75, 0.01);
+var w100 = Engine.berekenWoning({ ki: 713, privePct: 1 }, p);
+assertClose("woongedeelte bij 100% privé (X-imus: 5.466,33)", w100.vaaWoning, 5466.33, 0.01);
+var wGem = Engine.berekenWoning({ ki: 713, privePct: 0.75, gemeubeld: true }, p);
+assertClose("mark-up gemeubeld +2/3 (X-imus: 2.733,17)", wGem.markUpGemeubeld, 2733.17, 0.01);
 
 // Testgeval 5 — 80%-regel IPT op bruto 32.460 (cash + gewone VAA)
 console.log("");
