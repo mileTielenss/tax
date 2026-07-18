@@ -1,0 +1,10 @@
+{
+  "name": "mtrex-loonberekening",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PWA loonberekening bedrijfsleider (MT-Rex)",
+  "scripts": {
+    "test": "node test.js",
+    "start": "python3 -m http.server 8080"
+  }
+}

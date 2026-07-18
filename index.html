@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="nl-BE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14532d">
+  <title>Loonberekening MT-Rex</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Loonberekening bedrijfsleider</h1>
+  <nav>
+    <a href="#calculator" id="nav-calculator">Berekening</a>
+    <a href="#beheer" id="nav-beheer">Tarieven</a>
+  </nav>
+</header>
+
+<div id="ijk-banner" class="banner verborgen"></div>
+
+<main>
+
+  <!-- ===================== Berekening ===================== -->
+  <section id="view-calculator">
+
+    <form id="invoer" autocomplete="off">
+      <div class="veldrij">
+        <label for="aanslagjaar">Aanslagjaar</label>
+        <select id="aanslagjaar"></select>
+      </div>
+
+      <fieldset>
+        <legend>Loonpakket per jaar</legend>
+        <div class="veldrij">
+          <label for="cashloon">Cash brutoloon</label>
+          <input id="cashloon" type="text" inputmode="decimal" value="26.481">
+        </div>
+        <div class="veldrij">
+          <label for="vaa-bewoning">VAA bewoning</label>
+          <input id="vaa-bewoning" type="text" inputmode="decimal" value="7.939,75">
+        </div>
+        <div class="veldrij">
+          <label for="vaa-rente">VAA rente bulletkrediet</label>
+          <input id="vaa-rente" type="text" inputmode="decimal" value="13.119,12">
+        </div>
+        <div class="veldrij">
+          <label for="vaa-wagen">VAA bedrijfswagen</label>
+          <input id="vaa-wagen" type="text" inputmode="decimal" value="2.316">
+        </div>
+        <div class="veldrij">
+          <label for="vaa-gsm">VAA gsm &amp; internet</label>
+          <input id="vaa-gsm" type="text" inputmode="decimal" value="144">
+        </div>
+      </fieldset>
+
+      <label class="checkboxrij">
+        <input id="bijdrage-prive" type="checkbox">
+        Ik betaal de sociale bijdrage privé (standaard draagt de vennootschap ze)
+      </label>
+    </form>
+
+    <div id="uitkomst">
+
+      <div class="kaart kaart-netto">
+        <h2>Netto besteedbaar</h2>
+        <p class="groot" id="netto-jaar"></p>
+        <p class="middel"><span id="netto-maand"></span> per maand</p>
+        <p class="toelichting">Wat werkelijk op je rekening komt: cashloon min personenbelasting<span id="netto-toelichting-prive"></span>.</p>
+      </div>
+
+      <div class="kaart">
+        <h2>Heffingen</h2>
+        <table>
+          <tr><td>Sociale bijdrage (jaar)</td><td id="h-sociale"></td></tr>
+          <tr class="detailrij"><td>waarvan per kwartaal</td><td id="h-sociale-kwartaal"></td></tr>
+          <tr><td>Staatsbelasting</td><td id="h-staat"></td></tr>
+          <tr><td>Gemeentebelasting (<span id="h-gemeente-naam"></span>, <span id="h-gemeente-pct"></span>)</td><td id="h-gemeente"></td></tr>
+          <tr class="totaalrij"><td>Totale heffingen</td><td id="h-totaal"></td></tr>
+        </table>
+        <p class="toelichting" id="h-druk"></p>
+      </div>
+
+      <div class="kaart">
+        <h2>Vennootschap</h2>
+        <table>
+          <tr><td>Cashloon</td><td id="v-cashloon"></td></tr>
+          <tr id="v-bijdrage-rij"><td>Sociale bijdrage (gedragen door vennootschap)</td><td id="v-bijdrage"></td></tr>
+          <tr class="totaalrij"><td>Reële cash uit voor het loongedeelte</td><td id="v-totaal"></td></tr>
+        </table>
+      </div>
+
+      <div class="kaart kaart-inzicht">
+        <h2>Het VAA-effect</h2>
+        <p>De voordelen alle aard (<span id="i-vaa-totaal"></span>) verhogen de belastbare basis tot <span id="i-basis"></span>, maar komen nooit als cash binnen. De heffing op dat niet-cash deel wordt betaald uit je cashloon.</p>
+        <p id="i-druk"></p>
+      </div>
+
+      <details class="kaart">
+        <summary>Tussenstappen van de berekening</summary>
+        <table>
+          <tr><td>Belastbare basis (cash + VAA)</td><td id="t-basis"></td></tr>
+          <tr><td>Forfaitaire beroepskosten<span id="t-kosten-plafond"></span></td><td id="t-kosten"></td></tr>
+          <tr><td>Sociale bijdrage (aftrekbaar)</td><td id="t-sociale"></td></tr>
+          <tr class="totaalrij"><td>Netto belastbaar beroepsinkomen</td><td id="t-netto-belastbaar"></td></tr>
+          <tr><td colspan="2" class="tussenkop">Staatsbelasting per schijf</td></tr>
+        </table>
+        <table id="t-schijven"></table>
+        <table>
+          <tr><td>Belasting vóór belastingvrije som</td><td id="t-bruto"></td></tr>
+          <tr><td>Verrekening belastingvrije som (25%)</td><td id="t-vrijesom"></td></tr>
+          <tr class="totaalrij"><td>Staatsbelasting</td><td id="t-staat"></td></tr>
+        </table>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- ===================== Tarieven (beheer) ===================== -->
+  <section id="view-beheer" class="verborgen">
+    <div class="kaart">
+      <p>Elke waarde hieronder is lokaal aanpasbaar. Open de bronlink, lees het actuele cijfer af en tik het over — de app herrekent en controleert meteen. Aanpassingen worden in deze browser bewaard; de ingebouwde waarden blijven het vertrekpunt.</p>
+      <p id="beheer-ijk"></p>
+      <button id="reset-alles" type="button">Herstel alle ingebouwde waarden</button>
+    </div>
+    <div id="beheer-velden"></div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Indicatief instrument — de definitieve aanslag ligt bij de boekhouder. Tarieven: zie <a href="#beheer">Tarieven</a>.</p>
+</footer>
+
+<script src="params.js"></script>
+<script src="engine.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
