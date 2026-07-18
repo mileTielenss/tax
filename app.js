@@ -1,9 +1,9 @@
 "use strict";
 /*
- * UI-schil: leest invoer, laat de rekenmotor draaien op de opgeloste
- * parameters (ingebouwd + lokale overrides) en toont de uitkomst.
- * Elk onderdeel van het pakket heeft een aan/uit-knop; bedragen kunnen
- * per maand of per jaar ingegeven worden. Intern rekent alles op jaarbasis.
+ * UI-schil: simulaties beheren, invoer lezen, de rekenmotor laten draaien
+ * op de opgeloste parameters (ingebouwd + lokale overrides) en de uitkomst
+ * tonen. Bedragen worden ingegeven per maand of per jaar (globale keuze);
+ * intern rekent alles op jaarbasis.
  */
 (function () {
 
@@ -29,78 +29,153 @@
   }
 
   /* ---------- invoerconfiguratie ----------
-   * Elke sectie (behalve de bezoldiging) heeft een ja/nee-knop; staat die
-   * uit, dan telt het onderdeel niet mee. Soorten velden:
-   *   "dual"  : bedrag per maand en per jaar, gesynchroniseerd
-   *   "jaar"  : bedrag enkel per jaar
-   *   "eur"   : los bedrag
-   *   "getal" : gewoon getal (aantal, jaren, procent)
-   *   "vink"  : ja/nee binnen de sectie
-   * De standaardwaarden zijn suggesties uit de simulatie van de boekhouder
-   * en de wettelijke forfaits. */
+   * Soorten velden:
+   *   "bedrag" : bedrag, ingegeven per maand of per jaar (globale keuze)
+   *   "jaar"   : bedrag altijd per jaar
+   *   "eur"    : los bedrag
+   *   "getal"  : gewoon getal (aantal, jaren, procent)
+   *   "vink"   : ja/nee binnen de sectie
+   * Waarden van bedrag/jaar-velden worden intern altijd per jaar bewaard. */
   var INVOER_SECTIES = [
     { id: "bezoldiging", titel: "Bezoldiging", velden: [
-      { id: "cashloon", label: "Cash brutoloon", soort: "dual", maand: 2000 }
+      { id: "cashloon", label: "Cash brutoloon", soort: "bedrag" }
     ]},
-    { id: "wagen", titel: "Bedrijfswagen", toggle: true, aan: true, velden: [
-      { id: "vaa-wagen", label: "VAA bedrijfswagen (uit loonfiche of boekhouder)", soort: "dual", maand: 193 }
+    { id: "wagen", titel: "Bedrijfswagen", toggle: true, velden: [
+      { id: "vaa-wagen", label: "VAA wagen (loonfiche)", soort: "bedrag" }
     ]},
-    { id: "woning", titel: "Woning via de vennootschap", toggle: true, aan: false, velden: [
-      { id: "woning-handmatig", label: "Ik geef het VAA-bedrag zelf in (cijfer van de boekhouder)", soort: "vink", aan: false },
-      { id: "woning-bedrag", label: "VAA bewoning (incl. eventuele forfaits)", soort: "jaar", waarde: 0 },
-      { id: "woning-ki", label: "Kadastraal inkomen (niet geïndexeerd)", soort: "eur", waarde: 1000 },
-      { id: "woning-pct", label: "Privégedeelte (%)", soort: "getal", waarde: 100 },
-      { id: "woning-verwarming", label: "Forfait verwarming (suggestie: € 2.500/jaar)", soort: "vink", aan: true },
-      { id: "woning-elektriciteit", label: "Forfait elektriciteit (suggestie: € 1.250/jaar)", soort: "vink", aan: true },
+    { id: "woning", titel: "Woning via de vennootschap", toggle: true, velden: [
+      { id: "woning-handmatig", label: "VAA-bedrag zelf ingeven (cijfer boekhouder)", soort: "vink" },
+      { id: "woning-bedrag", label: "VAA bewoning (incl. forfaits)", soort: "jaar" },
+      { id: "woning-ki", label: "Kadastraal inkomen (niet geïndexeerd)", soort: "eur" },
+      { id: "woning-pct", label: "Privégedeelte (%)", soort: "getal" },
+      { id: "woning-gemeubeld", label: "Gemeubeld (+2/3 op woongedeelte)", soort: "vink" },
+      { id: "woning-verwarming", label: "Forfait verwarming", soort: "vink" },
+      { id: "woning-elektriciteit", label: "Forfait elektriciteit", soort: "vink" },
       { id: "woning-preview", soort: "preview" }
     ]},
-    { id: "overige", titel: "Overige voordelen alle aard", toggle: true, aan: true, velden: [
-      { id: "vaa-internet", label: "Internet", soort: "dual", maand: 5 },
-      { id: "vaa-tel-toestel", label: "Telefonie: toestel", soort: "dual", maand: 3 },
-      { id: "vaa-tel-abo", label: "Telefonie: abonnement", soort: "dual", maand: 4 },
-      { id: "vaa-pc", label: "PC", soort: "dual", maand: 0 },
-      { id: "vaa-rente", label: "Rente bulletkrediet", soort: "dual", maand: 0 },
-      { id: "vaa-andere", label: "Andere VAA", soort: "dual", maand: 0 }
+    { id: "overige", titel: "Overige voordelen alle aard", toggle: true, velden: [
+      { id: "vaa-gsm", label: "Gsm, internet & pc", soort: "bedrag" },
+      { id: "vaa-rente", label: "Rente bulletkrediet", soort: "bedrag" },
+      { id: "vaa-andere", label: "Andere VAA", soort: "bedrag" }
     ]},
-    { id: "opties", titel: "Aandelenopties", toggle: true, aan: false, velden: [
-      { id: "opties-bruto", label: "Bruto toekenning", soort: "dual", maand: 1530 },
-      { id: "opties-beheer", label: "Beheerskost (vennootschap)", soort: "dual", maand: 50 }
+    { id: "opties", titel: "Aandelenopties", toggle: true, velden: [
+      { id: "opties-bruto", label: "Bruto toekenning", soort: "bedrag" },
+      { id: "opties-beheer", label: "Beheerskost (vennootschap)", soort: "bedrag" }
     ]},
-    { id: "mc", titel: "Maaltijdcheques", toggle: true, aan: true, velden: [
-      { id: "mc-aantal", label: "Aantal cheques per maand", soort: "getal", waarde: 20 },
-      { id: "mc-zichtwaarde", label: "Zichtwaarde per cheque (max € 10)", soort: "eur", waarde: 10 }
+    { id: "mc", titel: "Maaltijdcheques", toggle: true, velden: [
+      { id: "mc-aantal", label: "Cheques per maand", soort: "getal" },
+      { id: "mc-zichtwaarde", label: "Zichtwaarde per cheque", soort: "eur" }
     ]},
-    { id: "onkosten", titel: "Onkostenvergoedingen (belastingvrij)", toggle: true, aan: true, velden: [
-      { id: "onk-auto", label: "Forfait autokosten / staanplaats", soort: "dual", maand: 50 },
-      { id: "onk-carwash", label: "Forfait carwash", soort: "dual", maand: 15 },
-      { id: "onk-parking", label: "Forfait parkeerkosten", soort: "dual", maand: 15 },
-      { id: "onk-vakliteratuur", label: "Forfait vakliteratuur", soort: "dual", maand: 10 },
-      { id: "onk-thuiswerk", label: "Thuiswerkvergoeding", soort: "dual", maand: 160.99 },
-      { id: "onk-andere", label: "Andere vergoedingen", soort: "dual", maand: 0 }
+    { id: "onkosten", titel: "Onkostenvergoedingen (belastingvrij)", toggle: true, velden: [
+      { id: "onk-totaal", label: "Totaal vergoedingen", soort: "bedrag" }
     ]},
-    { id: "ipt", titel: "IPT (pensioenopbouw via de vennootschap)", toggle: true, aan: true, velden: [
-      { id: "ipt-premie", label: "Geplande jaarpremie", soort: "jaar", waarde: 0 },
-      { id: "ipt-restjaren", label: "Jaren tot pensioen", soort: "getal", waarde: 20 },
-      { id: "ipt-opgebouwd", label: "Reeds opgebouwd kapitaal", soort: "jaar", waarde: 0 }
+    { id: "ipt", titel: "IPT (pensioen via de vennootschap)", toggle: true, velden: [
+      { id: "ipt-premie", label: "Geplande jaarpremie", soort: "jaar" },
+      { id: "ipt-restjaren", label: "Jaren tot pensioen", soort: "getal" },
+      { id: "ipt-opgebouwd", label: "Reeds opgebouwd kapitaal", soort: "jaar" }
     ]}
   ];
+
+  var BEDRAG_VELDEN = [];
+  var GETAL_VELDEN = [];
+  var VINK_VELDEN = [];
+  var TOGGLES = [];
+  INVOER_SECTIES.forEach(function (s) {
+    if (s.toggle) TOGGLES.push(s.id);
+    s.velden.forEach(function (v) {
+      if (v.soort === "bedrag" || v.soort === "jaar") BEDRAG_VELDEN.push(v);
+      else if (v.soort === "eur" || v.soort === "getal") GETAL_VELDEN.push(v);
+      else if (v.soort === "vink") VINK_VELDEN.push(v);
+    });
+  });
+
+  /* ---------- simulaties ----------
+   * Opslag: { actief: naam, simulaties: { naam: { waarden, vinken, toggles,
+   * bijdragePrive } } }. Bedragen altijd per jaar. */
+  var SIM_KEY = "mtrex-loon.simulaties.v1";
+
+  function presetKevin() {
+    return {
+      bijdragePrive: false,
+      toggles: { wagen: true, woning: false, overige: true, opties: true, mc: true, onkosten: true, ipt: true },
+      vinken: { "woning-handmatig": false, "woning-gemeubeld": false, "woning-verwarming": true, "woning-elektriciteit": true },
+      waarden: {
+        cashloon: 30000, "vaa-wagen": 2316, "woning-bedrag": 0, "woning-ki": 713, "woning-pct": 75,
+        "vaa-gsm": 144, "vaa-rente": 0, "vaa-andere": 0,
+        "opties-bruto": 18360, "opties-beheer": 600,
+        "mc-aantal": 20, "mc-zichtwaarde": 10,
+        "onk-totaal": 3011.88,
+        "ipt-premie": 0, "ipt-restjaren": 20, "ipt-opgebouwd": 0
+      }
+    };
+  }
+
+  function presetMile() {
+    var s = presetKevin();
+    s.toggles = { wagen: true, woning: true, overige: true, opties: false, mc: false, onkosten: false, ipt: true };
+    s.waarden.cashloon = 26481;
+    s.waarden["vaa-rente"] = 13119.12;
+    s.waarden["opties-bruto"] = 0;
+    s.waarden["opties-beheer"] = 0;
+    s.waarden["onk-totaal"] = 0;
+    return s;
+  }
+
+  function laadSims() {
+    var data = null;
+    try { data = JSON.parse(localStorage.getItem(SIM_KEY)); } catch (e) { /* leeg */ }
+    if (!data || !data.simulaties || !Object.keys(data.simulaties).length) {
+      data = { actief: "Simulatie Kevin", simulaties: {
+        "Simulatie Kevin": presetKevin(),
+        "Simulatie Mile (woning)": presetMile()
+      }};
+      bewaarSims(data);
+    }
+    if (!data.simulaties[data.actief]) data.actief = Object.keys(data.simulaties)[0];
+    return data;
+  }
+
+  function bewaarSims(data) {
+    try { localStorage.setItem(SIM_KEY, JSON.stringify(data)); } catch (e) { /* opslag vol */ }
+  }
+
+  var sims = null;
+
+  function actieveSim() { return sims.simulaties[sims.actief]; }
+
+  /* ---------- maand/jaar-modus ---------- */
+  var MODUS_KEY = "mtrex-loon.modus";
+  var modus = "maand";
+  try { modus = localStorage.getItem(MODUS_KEY) === "jaar" ? "jaar" : "maand"; } catch (e) { /* standaard */ }
+
+  function zetModus(nieuw) {
+    if (nieuw === modus) return;
+    stateUitDom();
+    modus = nieuw;
+    try { localStorage.setItem(MODUS_KEY, modus); } catch (e) { /* opslag */ }
+    $("modus-maand").classList.toggle("actief", modus === "maand");
+    $("modus-jaar").classList.toggle("actief", modus === "jaar");
+    stateNaarDom();
+    herreken();
+  }
+
+  /* ---------- invoer opbouwen ---------- */
 
   function bouwInvoer() {
     var container = $("invoer-secties");
     INVOER_SECTIES.forEach(function (sectie) {
       var fs = document.createElement("fieldset");
       var legend = document.createElement("legend");
-
       if (sectie.toggle) {
         var tglLabel = document.createElement("label");
         tglLabel.className = "toggle-label";
         var tgl = document.createElement("input");
         tgl.type = "checkbox";
         tgl.id = "tgl-" + sectie.id;
-        tgl.checked = !!sectie.aan;
         tglLabel.appendChild(tgl);
         tglLabel.appendChild(document.createTextNode(" " + sectie.titel));
         legend.appendChild(tglLabel);
+        tgl.addEventListener("change", function () { verversSecties(); herreken(); });
       } else {
         legend.textContent = sectie.titel;
       }
@@ -111,15 +186,6 @@
       sectie.velden.forEach(function (veld) { inhoud.appendChild(maakVeldrij(veld)); });
       fs.appendChild(inhoud);
       container.appendChild(fs);
-
-      if (sectie.toggle) {
-        var toggleEl = $("tgl-" + sectie.id);
-        var zetZichtbaar = function () {
-          inhoud.classList.toggle("verborgen", !toggleEl.checked);
-        };
-        toggleEl.addEventListener("change", function () { zetZichtbaar(); herreken(); });
-        zetZichtbaar();
-      }
     });
   }
 
@@ -130,7 +196,6 @@
       prev.className = "toelichting";
       return prev;
     }
-
     var rij = document.createElement("div");
     rij.className = "veldrij";
 
@@ -140,7 +205,6 @@
       var vink = document.createElement("input");
       vink.type = "checkbox";
       vink.id = veld.id;
-      vink.checked = !!veld.aan;
       vink.addEventListener("change", herreken);
       vinkLabel.appendChild(vink);
       vinkLabel.appendChild(document.createTextNode(" " + veld.label));
@@ -149,50 +213,125 @@
     }
 
     var label = document.createElement("label");
-    label.textContent = veld.label;
-    label.htmlFor = veld.id + (veld.soort === "dual" ? "-m" : "");
+    label.id = "lbl-" + veld.id;
+    label.htmlFor = veld.id;
     rij.appendChild(label);
 
-    if (veld.soort === "dual") {
-      var wrap = document.createElement("span");
-      wrap.className = "dual";
-      var im = maakBedragInput(veld.id + "-m", veld.maand);
-      var ij = maakBedragInput(veld.id + "-j", veld.maand * 12);
-      im.addEventListener("input", function () { ij.value = getal.format(parseBE(im.value) * 12); herreken(); });
-      ij.addEventListener("input", function () { im.value = getal.format(parseBE(ij.value) / 12); herreken(); });
-      wrap.appendChild(im); wrap.appendChild(maakSuffix("/maand"));
-      wrap.appendChild(ij); wrap.appendChild(maakSuffix("/jaar"));
-      rij.appendChild(wrap);
-    } else {
-      var input = maakBedragInput(veld.id, veld.waarde);
-      input.addEventListener("input", herreken);
-      var wrap2 = document.createElement("span");
-      wrap2.className = "dual";
-      wrap2.appendChild(input);
-      if (veld.soort === "jaar") wrap2.appendChild(maakSuffix("/jaar"));
-      rij.appendChild(wrap2);
-    }
-    return rij;
-  }
-
-  function maakBedragInput(id, waarde) {
     var input = document.createElement("input");
     input.type = "text";
     input.inputMode = "decimal";
-    input.id = id;
-    input.value = getal.format(waarde || 0);
-    return input;
+    input.id = veld.id;
+    input.addEventListener("input", herreken);
+    rij.appendChild(input);
+    return rij;
   }
 
-  function maakSuffix(tekst) {
-    var s = document.createElement("span");
-    s.className = "suffix";
-    s.textContent = tekst;
-    return s;
+  function veldLabel(veld) {
+    if (veld.soort === "bedrag") return veld.label + (modus === "maand" ? " (per maand)" : " (per jaar)");
+    if (veld.soort === "jaar") return veld.label + " (per jaar)";
+    return veld.label;
   }
+
+  function verversSecties() {
+    TOGGLES.forEach(function (id) {
+      $("inhoud-" + id).classList.toggle("verborgen", !$("tgl-" + id).checked);
+    });
+  }
+
+  /* ---------- state <-> DOM ----------
+   * De actieve simulatie is de bron van waarheid; bedragen per jaar. */
+
+  function stateNaarDom() {
+    var s = actieveSim();
+    $("bijdrage-prive").checked = !!s.bijdragePrive;
+    TOGGLES.forEach(function (id) { $("tgl-" + id).checked = !!s.toggles[id]; });
+    VINK_VELDEN.forEach(function (v) { $(v.id).checked = !!s.vinken[v.id]; });
+    BEDRAG_VELDEN.forEach(function (v) {
+      var jaar = s.waarden[v.id] || 0;
+      $(v.id).value = getal.format(v.soort === "bedrag" && modus === "maand" ? jaar / 12 : jaar);
+      $("lbl-" + v.id).textContent = veldLabel(v);
+    });
+    GETAL_VELDEN.forEach(function (v) {
+      $(v.id).value = getal.format(s.waarden[v.id] || 0);
+      $("lbl-" + v.id).textContent = veldLabel(v);
+    });
+    verversSecties();
+  }
+
+  function stateUitDom() {
+    var s = actieveSim();
+    s.bijdragePrive = $("bijdrage-prive").checked;
+    TOGGLES.forEach(function (id) { s.toggles[id] = $("tgl-" + id).checked; });
+    VINK_VELDEN.forEach(function (v) { s.vinken[v.id] = $(v.id).checked; });
+    BEDRAG_VELDEN.forEach(function (v) {
+      var w = parseBE($(v.id).value);
+      s.waarden[v.id] = v.soort === "bedrag" && modus === "maand" ? w * 12 : w;
+    });
+    GETAL_VELDEN.forEach(function (v) { s.waarden[v.id] = parseBE($(v.id).value); });
+    bewaarSims(sims);
+  }
+
+  /* ---------- simulatiebalk ---------- */
+
+  function verversSimSelect() {
+    var select = $("sim-select");
+    select.innerHTML = "";
+    Object.keys(sims.simulaties).forEach(function (naam) {
+      var optie = document.createElement("option");
+      optie.value = naam;
+      optie.textContent = naam;
+      select.appendChild(optie);
+    });
+    select.value = sims.actief;
+  }
+
+  function wisselSim(naam) {
+    stateUitDom();
+    sims.actief = naam;
+    bewaarSims(sims);
+    stateNaarDom();
+    herreken();
+  }
+
+  function nieuweSim() {
+    var basis = "Nieuwe simulatie";
+    var naam = window.prompt("Naam van de nieuwe simulatie (start van Kevins simulatie):", basis);
+    if (!naam) return;
+    naam = naam.trim();
+    if (!naam || sims.simulaties[naam]) return;
+    stateUitDom();
+    sims.simulaties[naam] = presetKevin();
+    sims.actief = naam;
+    bewaarSims(sims);
+    verversSimSelect();
+    stateNaarDom();
+    herreken();
+  }
+
+  function verwijderSim() {
+    if (!window.confirm('Simulatie "' + sims.actief + '" verwijderen?')) return;
+    delete sims.simulaties[sims.actief];
+    if (!Object.keys(sims.simulaties).length) {
+      sims.simulaties["Simulatie Kevin"] = presetKevin();
+      sims.simulaties["Simulatie Mile (woning)"] = presetMile();
+    }
+    sims.actief = Object.keys(sims.simulaties)[0];
+    bewaarSims(sims);
+    verversSimSelect();
+    stateNaarDom();
+    herreken();
+  }
+
+  /* ---------- berekening + weergave ---------- */
 
   function aan(sectieId) { return $("tgl-" + sectieId).checked; }
-  function jaarwaarde(id) { return parseBE($(id + "-j").value); }
+
+  function jaarwaarde(veldId) {
+    var veld = null;
+    BEDRAG_VELDEN.forEach(function (v) { if (v.id === veldId) veld = v; });
+    var w = parseBE($(veldId).value);
+    return veld && veld.soort === "bedrag" && modus === "maand" ? w * 12 : w;
+  }
 
   function huidigAanslagjaar() { return $("aanslagjaar").value; }
 
@@ -201,17 +340,15 @@
       cashloon: jaarwaarde("cashloon"),
       vaa: {
         wagen: aan("wagen") ? jaarwaarde("vaa-wagen") : 0,
-        internet: aan("overige") ? jaarwaarde("vaa-internet") : 0,
-        telefonieToestel: aan("overige") ? jaarwaarde("vaa-tel-toestel") : 0,
-        telefonieAbonnement: aan("overige") ? jaarwaarde("vaa-tel-abo") : 0,
-        pc: aan("overige") ? jaarwaarde("vaa-pc") : 0,
+        gsmInternetPc: aan("overige") ? jaarwaarde("vaa-gsm") : 0,
         renteBulletkrediet: aan("overige") ? jaarwaarde("vaa-rente") : 0,
         andere: aan("overige") ? jaarwaarde("vaa-andere") : 0,
-        bewoning: aan("woning") && $("woning-handmatig").checked ? parseBE($("woning-bedrag").value) : 0
+        bewoning: aan("woning") && $("woning-handmatig").checked ? jaarwaarde("woning-bedrag") : 0
       },
       woning: aan("woning") && !$("woning-handmatig").checked ? {
         ki: parseBE($("woning-ki").value),
         privePct: parseBE($("woning-pct").value) / 100,
+        gemeubeld: $("woning-gemeubeld").checked,
         verwarming: $("woning-verwarming").checked,
         elektriciteit: $("woning-elektriciteit").checked
       } : { ki: 0 },
@@ -221,16 +358,12 @@
       maaltijdcheques: aan("mc")
         ? { aantalPerMaand: parseBE($("mc-aantal").value), zichtwaarde: parseBE($("mc-zichtwaarde").value) }
         : { aantalPerMaand: 0, zichtwaarde: 0 },
-      onkosten: { totaal: aan("onkosten")
-        ? jaarwaarde("onk-auto") + jaarwaarde("onk-carwash") + jaarwaarde("onk-parking") + jaarwaarde("onk-vakliteratuur") + jaarwaarde("onk-thuiswerk") + jaarwaarde("onk-andere")
-        : 0 },
+      onkosten: { totaal: aan("onkosten") ? jaarwaarde("onk-totaal") : 0 },
       ipt: aan("ipt")
-        ? { jaarpremie: parseBE($("ipt-premie").value), resterendeJaren: parseBE($("ipt-restjaren").value), reedsOpgebouwd: parseBE($("ipt-opgebouwd").value) }
+        ? { jaarpremie: jaarwaarde("ipt-premie"), resterendeJaren: parseBE($("ipt-restjaren").value), reedsOpgebouwd: jaarwaarde("ipt-opgebouwd") }
         : { jaarpremie: 0, resterendeJaren: 0, reedsOpgebouwd: 0 }
     };
   }
-
-  /* ---------- berekening + weergave ---------- */
 
   function zetMJ(basisId, jaarbedrag) {
     $(basisId + "-m").textContent = formatEUR(jaarbedrag / 12);
@@ -245,7 +378,7 @@
     var r = Engine.berekenPakket(input, p, { bijdragePrive: bijdragePrive });
 
     var handmatig = $("woning-handmatig").checked;
-    ["woning-ki", "woning-pct", "woning-verwarming", "woning-elektriciteit"].forEach(function (id) {
+    ["woning-ki", "woning-pct", "woning-gemeubeld", "woning-verwarming", "woning-elektriciteit"].forEach(function (id) {
       $(id).closest(".veldrij").style.display = handmatig ? "none" : "";
     });
     $("woning-bedrag").closest(".veldrij").style.display = handmatig ? "" : "none";
@@ -254,7 +387,8 @@
     $("woning-preview").textContent = !aan("woning") ? ""
       : handmatig
         ? "Het ingegeven bedrag van de boekhouder (" + formatEUR(input.vaa.bewoning) + " per jaar) wordt gebruikt als VAA bewoning."
-        : "Berekend VAA: woning " + formatEUR(w.vaaWoning) + " (KI × " + factorFmt.format(p["vaa.kiIndexatie"]) + " × 100/60 × " + getal.format(p["vaa.woningFactor"]) + " × privégedeelte)"
+        : "Berekend VAA: woongedeelte " + formatEUR(w.vaaWoning) + " (KI × privé% × " + factorFmt.format(p["vaa.kiIndexatie"]) + " × 100/60 × " + getal.format(p["vaa.woningFactor"]) + ")"
+          + (w.markUpGemeubeld ? " + gemeubeld " + formatEUR(w.markUpGemeubeld) : "")
           + (w.vaaVerwarming ? " + verwarming " + formatEUR(w.vaaVerwarming) : "")
           + (w.vaaElektriciteit ? " + elektriciteit " + formatEUR(w.vaaElektriciteit) : "")
           + " = " + formatEUR(w.totaal) + " per jaar.";
@@ -334,6 +468,7 @@
 
     toonWaarschuwingen(r, input, p);
     toonIjkcontrole(p);
+    stateUitDom();
   }
 
   function toonWaarschuwingen(r, input, p) {
@@ -513,7 +648,17 @@
     });
 
     bouwInvoer();
+    sims = laadSims();
+    verversSimSelect();
+    $("modus-maand").classList.toggle("actief", modus === "maand");
+    $("modus-jaar").classList.toggle("actief", modus === "jaar");
+    stateNaarDom();
 
+    $("sim-select").addEventListener("change", function () { wisselSim(this.value); });
+    $("sim-nieuw").addEventListener("click", nieuweSim);
+    $("sim-verwijder").addEventListener("click", verwijderSim);
+    $("modus-maand").addEventListener("click", function () { zetModus("maand"); });
+    $("modus-jaar").addEventListener("click", function () { zetModus("jaar"); });
     $("bijdrage-prive").addEventListener("change", herreken);
     select.addEventListener("change", function () { herreken(); renderBeheer(); });
     $("print-knop").addEventListener("click", function () { window.print(); });
