@@ -502,9 +502,13 @@
     $("p-rente").textContent = formatEUR(r.ipt80.maxAanvullendeRente);
     $("p-kapitaal").textContent = formatEUR(r.ipt80.maxKapitaal);
     $("p-ruimte").textContent = formatEUR(r.ipt80.ruimte);
-    $("p-premie").textContent = aan("ipt") && input.ipt.resterendeJaren > 0
-      ? formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar"
-      : "vul de jaren tot pensioen in";
+    if (aan("ipt") && input.ipt.resterendeJaren > 0) {
+      $("p-premie").textContent = formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar";
+      $("p-premie-maand").textContent = formatEUR(r.ipt80.indicatieveJaarpremie / 12) + " per maand, gedurende " + getal.format(input.ipt.resterendeJaren) + " jaar";
+    } else {
+      $("p-premie").textContent = "—";
+      $("p-premie-maand").textContent = "Vink IPT aan en vul de jaren tot pensioen in.";
+    }
 
     $("i-vaa-totaal").textContent = formatEUR(r.vaaTotaalExclOpties + r.optiesVaa);
     $("i-basis").textContent = formatEUR(r.belastbareBasis);
