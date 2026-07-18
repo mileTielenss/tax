@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="nl-BE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14532d">
+  <title>Loonpakket-calculator</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>Loonpakket-calculator bedrijfsleider</h1>
+  <nav>
+    <a href="#calculator" id="nav-calculator">Berekening</a>
+    <a href="#beheer" id="nav-beheer">Tarieven</a>
+  </nav>
+</header>
+
+<div id="ijk-banner" class="banner verborgen"></div>
+<div id="waarschuwingen"></div>
+
+<main>
+
+  <!-- ===================== Berekening ===================== -->
+  <section id="view-calculator">
+
+    <form id="invoer" autocomplete="off">
+      <div class="veldrij">
+        <label for="aanslagjaar">Aanslagjaar</label>
+        <select id="aanslagjaar"></select>
+      </div>
+      <label class="checkboxrij">
+        <input id="bijdrage-prive" type="checkbox">
+        Ik betaal de sociale bijdrage privé (standaard draagt de vennootschap ze)
+      </label>
+      <div id="invoer-secties"></div>
+    </form>
+
+    <div class="werkbalk">
+      <button id="print-knop" type="button">Bewaar als PDF / afdrukken</button>
+    </div>
+
+    <div id="uitkomst">
+
+      <div class="kaart kaart-netto">
+        <h2>Netto gecorrigeerd (wat je er echt aan overhoudt)</h2>
+        <p class="groot" id="netto-gecorrigeerd-jaar"></p>
+        <p class="middel"><span id="netto-gecorrigeerd-maand"></span> per maand</p>
+        <table class="mj lichte-tabel">
+          <tr><td>Netto cash op je rekening</td><td id="s-netto-cash-m"></td><td id="s-netto-cash-j"></td></tr>
+          <tr id="s-opties-rij"><td>Aandelenopties netto</td><td id="s-opties-m"></td><td id="s-opties-j"></td></tr>
+          <tr id="s-mc-rij"><td>Nettowaarde maaltijdcheques</td><td id="s-mc-m"></td><td id="s-mc-j"></td></tr>
+        </table>
+      </div>
+
+      <div class="kaart">
+        <h2>Netto-opbouw</h2>
+        <table class="mj">
+          <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
+          <tr><td>Cash brutoloon</td><td id="n-bruto-m"></td><td id="n-bruto-j"></td></tr>
+          <tr><td>− Belasting (zonder optiedeel)</td><td id="n-pb-m"></td><td id="n-pb-j"></td></tr>
+          <tr id="n-sb-rij"><td>− Sociale bijdrage (privé gedragen)</td><td id="n-sb-m"></td><td id="n-sb-j"></td></tr>
+          <tr><td>+ Onkostenvergoedingen (belastingvrij)</td><td id="n-onkosten-m"></td><td id="n-onkosten-j"></td></tr>
+          <tr><td>− Eigen bijdrage maaltijdcheques</td><td id="n-mceigen-m"></td><td id="n-mceigen-j"></td></tr>
+          <tr class="totaalrij"><td>Netto cash</td><td id="n-netto-m"></td><td id="n-netto-j"></td></tr>
+        </table>
+      </div>
+
+      <div class="kaart" id="kaart-opties">
+        <h2>Aandelenopties</h2>
+        <table class="mj">
+          <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
+          <tr><td>Bruto toekenning</td><td id="o-bruto-m"></td><td id="o-bruto-j"></td></tr>
+          <tr class="detailrij"><td>Voordeel alle aard (belastbaar)</td><td id="o-vaa-m"></td><td id="o-vaa-j"></td></tr>
+          <tr><td>− Heffing op het voordeel</td><td id="o-heffing-m"></td><td id="o-heffing-j"></td></tr>
+          <tr><td>− Verkoopkost</td><td id="o-verkoop-m"></td><td id="o-verkoop-j"></td></tr>
+          <tr class="totaalrij"><td>Netto uit opties</td><td id="o-netto-m"></td><td id="o-netto-j"></td></tr>
+        </table>
+        <p class="toelichting">De beheerskost van de opties draagt de vennootschap; ze zit in de cash-out hieronder.</p>
+      </div>
+
+      <div class="kaart">
+        <h2>Heffingen</h2>
+        <table class="mj">
+          <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
+          <tr><td>Sociale bijdrage (<span id="h-sb-kwartaal"></span> per kwartaal)</td><td id="h-sb-m"></td><td id="h-sb-j"></td></tr>
+          <tr><td>Staatsbelasting</td><td id="h-staat-m"></td><td id="h-staat-j"></td></tr>
+          <tr><td>Gemeentebelasting (<span id="h-gemeente-naam"></span>, <span id="h-gemeente-pct"></span>)</td><td id="h-gemeente-m"></td><td id="h-gemeente-j"></td></tr>
+          <tr class="totaalrij"><td>Totale heffingen</td><td id="h-totaal-m"></td><td id="h-totaal-j"></td></tr>
+        </table>
+        <p class="toelichting" id="h-druk"></p>
+      </div>
+
+      <div class="kaart">
+        <h2>Vennootschap: cash out voor het loonpakket</h2>
+        <table class="mj">
+          <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
+          <tr><td>Cash brutoloon</td><td id="v-bruto-m"></td><td id="v-bruto-j"></td></tr>
+          <tr id="v-sb-rij"><td>Sociale bijdrage</td><td id="v-sb-m"></td><td id="v-sb-j"></td></tr>
+          <tr><td>Onkostenvergoedingen</td><td id="v-onkosten-m"></td><td id="v-onkosten-j"></td></tr>
+          <tr><td>Maaltijdcheques: werkgeversdeel</td><td id="v-mcwg-m"></td><td id="v-mcwg-j"></td></tr>
+          <tr><td>Maaltijdcheques: beheerskost</td><td id="v-mcbeheer-m"></td><td id="v-mcbeheer-j"></td></tr>
+          <tr><td>Aandelenopties: bruto toekenning</td><td id="v-opties-m"></td><td id="v-opties-j"></td></tr>
+          <tr><td>Aandelenopties: beheerskost</td><td id="v-optiesbeheer-m"></td><td id="v-optiesbeheer-j"></td></tr>
+          <tr><td>IPT-premie</td><td id="v-ipt-m"></td><td id="v-ipt-j"></td></tr>
+          <tr class="totaalrij"><td>Totale cash out</td><td id="v-totaal-m"></td><td id="v-totaal-j"></td></tr>
+        </table>
+        <p class="toelichting">De werkelijke kosten van wagen, gsm of woning staan hier los van: de voordelen alle aard zijn fiscale forfaits, geen kasstromen.</p>
+      </div>
+
+      <div class="kaart">
+        <h2>IPT: ruimte volgens de 80%-regel (raming)</h2>
+        <table>
+          <tr><td>Normale brutojaarbezoldiging (cash + VAA)</td><td id="p-bruto"></td></tr>
+          <tr><td>Geraamd wettelijk pensioen</td><td id="p-wettelijk"></td></tr>
+          <tr><td>Maximale aanvullende jaarrente (80%-grens)</td><td id="p-rente"></td></tr>
+          <tr><td>Maximaal eindkapitaal</td><td id="p-kapitaal"></td></tr>
+          <tr><td>Ruimte na reeds opgebouwd kapitaal</td><td id="p-ruimte"></td></tr>
+          <tr class="totaalrij"><td>Indicatieve maximale jaarpremie</td><td id="p-premie"></td></tr>
+        </table>
+        <p class="toelichting">Vuistregelraming. De exacte 80%-regel hangt af van loopbaan, backservice en verzekeringstarief — laat de definitieve premie door verzekeraar of boekhouder rekenen.</p>
+      </div>
+
+      <div class="kaart kaart-inzicht">
+        <h2>Het VAA-effect</h2>
+        <p>De voordelen alle aard (<span id="i-vaa-totaal"></span>, aandelenopties meegeteld) verhogen de belastbare basis tot <span id="i-basis"></span>, maar komen nooit als cash binnen. De heffing op dat niet-cash deel wordt betaald uit je cashloon.</p>
+      </div>
+
+      <details class="kaart">
+        <summary>Tussenstappen van de berekening</summary>
+        <table>
+          <tr><td>Belastbare basis (cash + alle VAA)</td><td id="t-basis"></td></tr>
+          <tr><td>Forfaitaire beroepskosten<span id="t-kosten-plafond"></span></td><td id="t-kosten"></td></tr>
+          <tr><td>Sociale bijdrage (aftrekbaar)</td><td id="t-sociale"></td></tr>
+          <tr class="totaalrij"><td>Netto belastbaar beroepsinkomen</td><td id="t-netto-belastbaar"></td></tr>
+          <tr><td colspan="2" class="tussenkop">Staatsbelasting per schijf</td></tr>
+        </table>
+        <table id="t-schijven"></table>
+        <table>
+          <tr><td>Belasting vóór belastingvrije som</td><td id="t-bruto"></td></tr>
+          <tr><td>Verrekening belastingvrije som</td><td id="t-vrijesom"></td></tr>
+          <tr class="totaalrij"><td>Staatsbelasting</td><td id="t-staat"></td></tr>
+        </table>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- ===================== Tarieven (beheer) ===================== -->
+  <section id="view-beheer" class="verborgen">
+    <div class="kaart">
+      <p>Elke waarde hieronder is lokaal aanpasbaar. Open de bronlink, lees het actuele cijfer af en tik het over — de app herrekent en controleert meteen. Aanpassingen worden in deze browser bewaard; de ingebouwde waarden blijven het vertrekpunt.</p>
+      <p id="beheer-ijk"></p>
+      <button id="reset-alles" type="button">Herstel alle ingebouwde waarden</button>
+    </div>
+    <div id="beheer-velden"></div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Indicatief instrument — de definitieve aanslag ligt bij de boekhouder. Tarieven: zie <a href="#beheer">Tarieven</a>.</p>
+</footer>
+
+<script src="params.js"></script>
+<script src="engine.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
