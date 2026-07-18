@@ -2,6 +2,8 @@
 /*
  * UI-schil: leest invoer, laat de rekenmotor draaien op de opgeloste
  * parameters (ingebouwd + lokale overrides) en toont de uitkomst.
+ * Bedragen kunnen per maand of per jaar ingegeven worden; intern
+ * rekent alles op jaarbasis.
  */
 (function () {
 
@@ -25,53 +27,202 @@
     return isFinite(n) ? n : 0;
   }
 
+  /* ---------- invoerconfiguratie ----------
+   * soort "dual"  : bedrag per maand en per jaar, gesynchroniseerd
+   * soort "jaar"  : bedrag enkel per jaar
+   * soort "eur"   : los bedrag (geen maand/jaar)
+   * soort "getal" : gewoon getal (aantal, jaren)
+   * Standaardwaarden = het voorbeeldscenario uit de simulatie van de
+   * boekhouder, zodat de app meteen een herkenbaar resultaat toont. */
+  var INVOER_SECTIES = [
+    { titel: "Bezoldiging", velden: [
+      { id: "cashloon", label: "Cash brutoloon", soort: "dual", maand: 2500 }
+    ]},
+    { titel: "Voordelen alle aard (fiscale forfaits per jaar of maand)", velden: [
+      { id: "vaa-wagen", label: "Bedrijfswagen", soort: "dual", maand: 193 },
+      { id: "vaa-bewoning", label: "Bewoning", soort: "dual", maand: 0 },
+      { id: "vaa-rente", label: "Rente bulletkrediet", soort: "dual", maand: 0 },
+      { id: "vaa-pc", label: "PC", soort: "dual", maand: 0 },
+      { id: "vaa-internet", label: "Internet", soort: "dual", maand: 5 },
+      { id: "vaa-tel-toestel", label: "Telefonie: toestel", soort: "dual", maand: 3 },
+      { id: "vaa-tel-abo", label: "Telefonie: abonnement", soort: "dual", maand: 4 },
+      { id: "vaa-andere", label: "Andere VAA", soort: "dual", maand: 0 }
+    ]},
+    { titel: "Aandelenopties", velden: [
+      { id: "opties-bruto", label: "Bruto toekenning", soort: "dual", maand: 1530 },
+      { id: "opties-beheer", label: "Beheerskost (vennootschap)", soort: "dual", maand: 50 }
+    ]},
+    { titel: "Maaltijdcheques", velden: [
+      { id: "mc-aantal", label: "Aantal cheques per maand", soort: "getal", waarde: 20 },
+      { id: "mc-zichtwaarde", label: "Zichtwaarde per cheque", soort: "eur", waarde: 10 }
+    ]},
+    { titel: "Onkostenvergoedingen (belastingvrij)", velden: [
+      { id: "onk-auto", label: "Forfait autokosten / staanplaats", soort: "dual", maand: 50 },
+      { id: "onk-carwash", label: "Forfait carwash", soort: "dual", maand: 15 },
+      { id: "onk-parking", label: "Forfait parkeerkosten", soort: "dual", maand: 15 },
+      { id: "onk-vakliteratuur", label: "Forfait vakliteratuur", soort: "dual", maand: 10 },
+      { id: "onk-thuiswerk", label: "Thuiswerkvergoeding", soort: "dual", maand: 160.99 },
+      { id: "onk-andere", label: "Andere vergoedingen", soort: "dual", maand: 0 }
+    ]},
+    { titel: "IPT (pensioenopbouw via de vennootschap)", velden: [
+      { id: "ipt-premie", label: "Geplande jaarpremie", soort: "jaar", waarde: 0 },
+      { id: "ipt-restjaren", label: "Jaren tot pensioen", soort: "getal", waarde: 20 },
+      { id: "ipt-opgebouwd", label: "Reeds opgebouwd kapitaal", soort: "jaar", waarde: 0 }
+    ]}
+  ];
+
+  function bouwInvoer() {
+    var container = $("invoer-secties");
+    INVOER_SECTIES.forEach(function (sectie) {
+      var fs = document.createElement("fieldset");
+      var legend = document.createElement("legend");
+      legend.textContent = sectie.titel;
+      fs.appendChild(legend);
+
+      sectie.velden.forEach(function (veld) {
+        var rij = document.createElement("div");
+        rij.className = "veldrij";
+        var label = document.createElement("label");
+        label.textContent = veld.label;
+        label.htmlFor = veld.id + (veld.soort === "dual" ? "-m" : "");
+        rij.appendChild(label);
+
+        if (veld.soort === "dual") {
+          var wrap = document.createElement("span");
+          wrap.className = "dual";
+          var im = maakBedragInput(veld.id + "-m", veld.maand);
+          var ij = maakBedragInput(veld.id + "-j", veld.maand * 12);
+          im.addEventListener("input", function () { ij.value = getal.format(parseBE(im.value) * 12); herreken(); });
+          ij.addEventListener("input", function () { im.value = getal.format(parseBE(ij.value) / 12); herreken(); });
+          wrap.appendChild(im); wrap.appendChild(maakSuffix("/maand"));
+          wrap.appendChild(ij); wrap.appendChild(maakSuffix("/jaar"));
+          rij.appendChild(wrap);
+        } else {
+          var input = maakBedragInput(veld.id, veld.waarde);
+          input.addEventListener("input", herreken);
+          var wrap2 = document.createElement("span");
+          wrap2.className = "dual";
+          wrap2.appendChild(input);
+          if (veld.soort === "jaar") wrap2.appendChild(maakSuffix("/jaar"));
+          rij.appendChild(wrap2);
+        }
+        fs.appendChild(rij);
+      });
+      container.appendChild(fs);
+    });
+  }
+
+  function maakBedragInput(id, waarde) {
+    var input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.id = id;
+    input.value = getal.format(waarde || 0);
+    return input;
+  }
+
+  function maakSuffix(tekst) {
+    var s = document.createElement("span");
+    s.className = "suffix";
+    s.textContent = tekst;
+    return s;
+  }
+
+  function jaarwaarde(id) { return parseBE($(id + "-j").value); }
+
   function huidigAanslagjaar() { return $("aanslagjaar").value; }
 
+  function verzamelInput() {
+    return {
+      cashloon: jaarwaarde("cashloon"),
+      vaa: {
+        wagen: jaarwaarde("vaa-wagen"),
+        bewoning: jaarwaarde("vaa-bewoning"),
+        renteBulletkrediet: jaarwaarde("vaa-rente"),
+        pc: jaarwaarde("vaa-pc"),
+        internet: jaarwaarde("vaa-internet"),
+        telefonieToestel: jaarwaarde("vaa-tel-toestel"),
+        telefonieAbonnement: jaarwaarde("vaa-tel-abo"),
+        andere: jaarwaarde("vaa-andere")
+      },
+      opties: { bruto: jaarwaarde("opties-bruto"), beheerskost: jaarwaarde("opties-beheer") },
+      maaltijdcheques: { aantalPerMaand: parseBE($("mc-aantal").value), zichtwaarde: parseBE($("mc-zichtwaarde").value) },
+      onkosten: { totaal: jaarwaarde("onk-auto") + jaarwaarde("onk-carwash") + jaarwaarde("onk-parking") + jaarwaarde("onk-vakliteratuur") + jaarwaarde("onk-thuiswerk") + jaarwaarde("onk-andere") },
+      ipt: { jaarpremie: parseBE($("ipt-premie").value), resterendeJaren: parseBE($("ipt-restjaren").value), reedsOpgebouwd: parseBE($("ipt-opgebouwd").value) }
+    };
+  }
+
   /* ---------- berekening + weergave ---------- */
+
+  function zetMJ(basisId, jaarbedrag) {
+    $(basisId + "-m").textContent = formatEUR(jaarbedrag / 12);
+    $(basisId + "-j").textContent = formatEUR(jaarbedrag);
+  }
 
   function herreken() {
     var aj = huidigAanslagjaar();
     var p = Storage.resolveParams(aj);
     var bijdragePrive = $("bijdrage-prive").checked;
+    var input = verzamelInput();
+    var r = Engine.berekenPakket(input, p, { bijdragePrive: bijdragePrive });
 
-    var r = Engine.berekenPakket({
-      cashloon: parseBE($("cashloon").value),
-      vaa: {
-        bewoning: parseBE($("vaa-bewoning").value),
-        renteBulletkrediet: parseBE($("vaa-rente").value),
-        wagen: parseBE($("vaa-wagen").value),
-        gsmInternet: parseBE($("vaa-gsm").value)
-      }
-    }, p, { bijdragePrive: bijdragePrive });
+    $("netto-gecorrigeerd-jaar").textContent = formatEUR(r.nettoGecorrigeerd) + " per jaar";
+    $("netto-gecorrigeerd-maand").textContent = formatEUR(r.nettoGecorrigeerdMaand);
+    zetMJ("s-netto-cash", r.nettoCash);
+    zetMJ("s-opties", r.opties.netto);
+    zetMJ("s-mc", r.maaltijdcheques.nettowaarde);
+    $("s-opties-rij").style.display = r.opties.bruto > 0 ? "" : "none";
+    $("s-mc-rij").style.display = r.maaltijdcheques.nettowaarde > 0 ? "" : "none";
 
-    $("netto-jaar").textContent = formatEUR(r.nettoBesteedbaarJaar) + " per jaar";
-    $("netto-maand").textContent = formatEUR(r.nettoBesteedbaarMaand);
-    $("netto-toelichting-prive").textContent = bijdragePrive ? " en min de sociale bijdrage die je privé draagt" : "";
+    zetMJ("n-bruto", r.input.cashloon);
+    zetMJ("n-pb", r.personenbelastingZonderOpties);
+    $("n-sb-rij").style.display = bijdragePrive ? "" : "none";
+    zetMJ("n-sb", bijdragePrive ? r.socialeBijdrage.jaar - r.opties.sbDelta : 0);
+    zetMJ("n-onkosten", r.onkostenTotaal);
+    zetMJ("n-mceigen", r.maaltijdcheques.eigenBijdrage);
+    zetMJ("n-netto", r.nettoCash);
 
-    $("h-sociale").textContent = formatEUR(r.socialeBijdrage.jaar);
-    $("h-sociale-kwartaal").textContent = formatEUR(r.socialeBijdrage.kwartaal);
-    $("h-staat").textContent = formatEUR(r.staat.staatsbelasting);
+    $("kaart-opties").style.display = r.opties.bruto > 0 ? "" : "none";
+    zetMJ("o-bruto", r.opties.bruto);
+    zetMJ("o-vaa", r.opties.vaa);
+    zetMJ("o-heffing", r.opties.heffing);
+    zetMJ("o-verkoop", r.opties.verkoopkost);
+    zetMJ("o-netto", r.opties.netto);
+
+    $("h-sb-kwartaal").textContent = formatEUR(r.socialeBijdrage.kwartaal);
+    zetMJ("h-sb", r.socialeBijdrage.jaar);
+    zetMJ("h-staat", r.staat.staatsbelasting);
     $("h-gemeente-naam").textContent = p["gemeente.naam"];
     $("h-gemeente-pct").textContent = formatPct(p["gemeente.opcentiemenPct"]);
-    $("h-gemeente").textContent = formatEUR(r.gemeentebelasting);
-    $("h-totaal").textContent = formatEUR(r.totaleHeffingen);
+    zetMJ("h-gemeente", r.gemeentebelasting);
+    zetMJ("h-totaal", r.totaleHeffingen);
     $("h-druk").textContent = r.belastbareBasis > 0
       ? "Dat is " + pctFmt.format(r.totaleHeffingen / r.belastbareBasis * 100) + "% van de belastbare basis."
       : "";
 
-    $("v-cashloon").textContent = formatEUR(r.input.cashloon);
-    $("v-bijdrage-rij").style.display = bijdragePrive ? "none" : "";
-    $("v-bijdrage").textContent = formatEUR(r.socialeBijdrage.jaar);
-    $("v-totaal").textContent = formatEUR(r.vennootschapCashUit);
+    zetMJ("v-bruto", r.input.cashloon);
+    $("v-sb-rij").style.display = bijdragePrive ? "none" : "";
+    zetMJ("v-sb", bijdragePrive ? 0 : r.socialeBijdrage.jaar);
+    zetMJ("v-onkosten", r.onkostenTotaal);
+    zetMJ("v-mcwg", r.maaltijdcheques.werkgeversDeel);
+    zetMJ("v-mcbeheer", r.maaltijdcheques.beheerskost);
+    zetMJ("v-opties", r.opties.bruto);
+    zetMJ("v-optiesbeheer", r.opties.beheerskost);
+    zetMJ("v-ipt", input.ipt.jaarpremie);
+    zetMJ("v-totaal", r.vennootschapCashUit);
 
-    $("i-vaa-totaal").textContent = formatEUR(r.vaaTotaal);
+    $("p-bruto").textContent = formatEUR(r.ipt80.brutoJaarbezoldiging);
+    $("p-wettelijk").textContent = formatEUR(r.ipt80.wettelijkPensioen);
+    $("p-rente").textContent = formatEUR(r.ipt80.maxAanvullendeRente);
+    $("p-kapitaal").textContent = formatEUR(r.ipt80.maxKapitaal);
+    $("p-ruimte").textContent = formatEUR(r.ipt80.ruimte);
+    $("p-premie").textContent = formatEUR(r.ipt80.indicatieveJaarpremie);
+
+    $("i-vaa-totaal").textContent = formatEUR(r.vaaTotaalExclOpties + r.optiesVaa);
     $("i-basis").textContent = formatEUR(r.belastbareBasis);
-    $("i-druk").textContent = r.input.cashloon > 0
-      ? "Van je cashloon van " + formatEUR(r.input.cashloon) + " gaat " + formatEUR(r.input.cashloon - r.nettoBesteedbaarJaar) + " (" + pctFmt.format((r.input.cashloon - r.nettoBesteedbaarJaar) / r.input.cashloon * 100) + "%) op aan heffingen over het volledige pakket, VAA inbegrepen."
-      : "";
 
     $("t-basis").textContent = formatEUR(r.belastbareBasis);
-    $("t-kosten-plafond").textContent = r.beroepskostenGeplafonneerd ? " (plafond bereikt)" : " (3%)";
+    $("t-kosten-plafond").textContent = r.beroepskostenGeplafonneerd ? " (plafond bereikt)" : "";
     $("t-kosten").textContent = "− " + formatEUR(r.beroepskosten);
     $("t-sociale").textContent = "− " + formatEUR(r.socialeBijdrage.jaar);
     $("t-netto-belastbaar").textContent = formatEUR(r.nettoBelastbaar);
@@ -86,7 +237,29 @@
     $("t-vrijesom").textContent = "− " + formatEUR(r.staat.belastingvrijeSomKorting);
     $("t-staat").textContent = formatEUR(r.staat.staatsbelasting);
 
+    toonWaarschuwingen(r, input, p);
     toonIjkcontrole(p);
+  }
+
+  function toonWaarschuwingen(r, input, p) {
+    var meldingen = [];
+    if (r.maaltijdcheques.zichtwaardeBovenMax) {
+      meldingen.push("De zichtwaarde van de maaltijdcheques (" + formatEUR(r.maaltijdcheques.zichtwaarde) + ") ligt boven het vrijgestelde maximum van " + formatEUR(p["mc.maxZichtwaarde"]) + ".");
+    }
+    if (r.ipt80.premieBovenRuimte) {
+      meldingen.push("De geplande IPT-premie (" + formatEUR(input.ipt.jaarpremie) + ") ligt boven de indicatieve 80%-ruimte van " + formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar.");
+    }
+    if (r.socialeBijdrage.minimumToegepast) {
+      meldingen.push("De minimale kwartaalbijdrage voor zelfstandigen is van toepassing.");
+    }
+    var container = $("waarschuwingen");
+    container.innerHTML = "";
+    meldingen.forEach(function (m) {
+      var div = document.createElement("div");
+      div.className = "banner banner-info";
+      div.textContent = m;
+      container.appendChild(div);
+    });
   }
 
   /* ---------- ijkcontrole ---------- */
@@ -112,13 +285,13 @@
 
   function veldWaardeNaarTekst(veld, waarde) {
     if (veld.type === "pct") return pctFmt.format(waarde * 100);
-    if (veld.type === "eur") return getal.format(waarde);
+    if (veld.type === "eur" || veld.type === "factor") return getal.format(waarde);
     return String(waarde);
   }
 
   function tekstNaarVeldWaarde(veld, tekst) {
     if (veld.type === "pct") return parseBE(tekst) / 100;
-    if (veld.type === "eur") return parseBE(tekst);
+    if (veld.type === "eur" || veld.type === "factor") return parseBE(tekst);
     return tekst.trim();
   }
 
@@ -243,9 +416,9 @@
       select.appendChild(optie);
     });
 
-    document.querySelectorAll("#invoer input").forEach(function (el) {
-      el.addEventListener("input", herreken);
-    });
+    bouwInvoer();
+
+    $("bijdrage-prive").addEventListener("change", herreken);
     select.addEventListener("change", function () { herreken(); renderBeheer(); });
     $("reset-alles").addEventListener("click", function () {
       Storage.wisAlleOverrides(huidigAanslagjaar());

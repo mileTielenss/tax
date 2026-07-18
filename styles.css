@@ -86,6 +86,25 @@ legend { font-weight: 600; padding: 0 0.35rem; }
 
 .checkboxrij { display: block; margin: 0.75rem 0; color: var(--inkt); }
 
+.dual { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; justify-content: flex-end; }
+.dual input {
+  width: 6.5rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 1rem;
+  text-align: right;
+  border: 1px solid var(--rand);
+  border-radius: 6px;
+}
+.dual input:focus { outline: 2px solid var(--groen); border-color: var(--groen); }
+.suffix { color: var(--grijs); font-size: 0.78rem; width: 3rem; }
+
+.banner-info {
+  background: var(--verify-achtergrond);
+  color: var(--verify);
+  border-bottom: 1px solid var(--verify);
+  font-weight: 500;
+}
+
 /* ---- uitkomst ---- */
 
 .kaart {
@@ -108,6 +127,17 @@ legend { font-weight: 600; padding: 0 0.35rem; }
 .kaart table { width: 100%; border-collapse: collapse; }
 .kaart td { padding: 0.25rem 0; }
 .kaart td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* maand/jaar-tabellen: laatste twee kolommen rechts uitgelijnd */
+.mj td:nth-child(2), .mj td:nth-child(3) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-left: 0.75rem;
+}
+.mj .kopcel td { color: var(--grijs); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.lichte-tabel { margin-top: 0.6rem; }
+.kaart-netto .lichte-tabel td { color: var(--groen-licht); border-color: rgba(255,255,255,0.25); }
 .totaalrij td { border-top: 1px solid var(--rand); font-weight: 700; padding-top: 0.4rem; }
 .detailrij td { color: var(--grijs); font-size: 0.85rem; }
 .tussenkop { font-weight: 600; padding-top: 0.6rem; color: var(--grijs); }

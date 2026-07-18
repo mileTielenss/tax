@@ -36,7 +36,23 @@
 
       // Aanvullende gemeentebelasting
       "gemeente.naam": "Lommel",
-      "gemeente.opcentiemenPct": 0.06
+      "gemeente.opcentiemenPct": 0.06,
+
+      // Maaltijdcheques (vrijgesteld mits minimale eigen bijdrage en max zichtwaarde)
+      "mc.minEigenBijdrage": 1.09,
+      "mc.maxZichtwaarde": 10,
+      "mc.beheerskostPct": 0.075,
+
+      // Aandelenopties (optiewet 26/03/1999, zoals in de simulatie van de boekhouder):
+      // VAA = bruto toekenning x onderliggende-factor x VAA-percentage
+      "opties.vaaPct": 0.18,
+      "opties.onderliggendeFactor": 1.83,
+      "opties.verkoopkostPct": 0.08,
+
+      // 80%-regel IPT (indicatieve raming)
+      "ipt.wettelijkPensioenPct": 0.25,
+      "ipt.loopbaanJaren": 40,
+      "ipt.omzettingsCoefficient": 13.43
     }
     // "2027": nog toe te voegen zodra de geindexeerde bedragen AJ2027
     // (inkomsten 2026) door FOD Financien gepubliceerd zijn.
@@ -47,7 +63,10 @@
     pbOfficieel: "https://financien.belgium.be",
     sb: "https://www.liantis.be/sites/default/files/uploads/bijdragetabel_2026_1225_NL_digitaal.pdf",
     sbOfficieel: "https://www.rsvz.be/nl/faq/hoeveel-sociale-bijdragen-moet-ik-betalen",
-    gemeente: "https://www.lommel.be/aanvullende-gemeentebelasting-op-de-personenbelasting-van-de-staat"
+    gemeente: "https://www.lommel.be/aanvullende-gemeentebelasting-op-de-personenbelasting-van-de-staat",
+    mc: "https://www.rsz.be/werkgevers/loonelementen/voordelen/maaltijdcheques",
+    opties: "https://financien.belgium.be/nl/ondernemingen/personenbelasting/voordelen-alle-aard/aandelenopties",
+    ipt: "https://financien.belgium.be/nl/ondernemingen/vennootschapsbelasting/belastingvoordelen/individuele-pensioentoezegging"
   };
 
   // Metadata die het beheerscherm aandrijft: een entry per bewerkbaar veld.
@@ -74,7 +93,19 @@
     { key: "sb.beheerskostPct", label: "Beheerskost verzekeringsfonds (Liantis)", categorie: "Sociale bijdragen", type: "pct", bron: BRON.sb, verify: false },
 
     { key: "gemeente.naam", label: "Gemeente", categorie: "Gemeentebelasting", type: "tekst", bron: BRON.gemeente, verify: false },
-    { key: "gemeente.opcentiemenPct", label: "Aanvullende gemeentebelasting", categorie: "Gemeentebelasting", type: "pct", bron: BRON.gemeente, verify: true }
+    { key: "gemeente.opcentiemenPct", label: "Aanvullende gemeentebelasting", categorie: "Gemeentebelasting", type: "pct", bron: BRON.gemeente, verify: true },
+
+    { key: "mc.minEigenBijdrage", label: "Minimale eigen bijdrage per cheque", categorie: "Maaltijdcheques", type: "eur", bron: BRON.mc, verify: false },
+    { key: "mc.maxZichtwaarde", label: "Maximale zichtwaarde per cheque", categorie: "Maaltijdcheques", type: "eur", bron: BRON.mc, verify: true },
+    { key: "mc.beheerskostPct", label: "Beheerskost uitgever", categorie: "Maaltijdcheques", type: "pct", bron: BRON.mc, verify: false },
+
+    { key: "opties.vaaPct", label: "VAA-percentage optiewet", categorie: "Aandelenopties", type: "pct", bron: BRON.opties, verify: false },
+    { key: "opties.onderliggendeFactor", label: "Onderliggende waarde / bruto toekenning", categorie: "Aandelenopties", type: "factor", bron: BRON.opties, verify: true },
+    { key: "opties.verkoopkostPct", label: "Verkoopkost bij directe verkoop", categorie: "Aandelenopties", type: "pct", bron: BRON.opties, verify: true },
+
+    { key: "ipt.wettelijkPensioenPct", label: "Raming wettelijk pensioen (% van bruto)", categorie: "IPT / 80%-regel", type: "pct", bron: BRON.ipt, verify: true },
+    { key: "ipt.loopbaanJaren", label: "Loopbaanjaren (teller op 40)", categorie: "IPT / 80%-regel", type: "factor", bron: BRON.ipt, verify: false },
+    { key: "ipt.omzettingsCoefficient", label: "Omzettingscoëfficiënt rente naar kapitaal", categorie: "IPT / 80%-regel", type: "factor", bron: BRON.ipt, verify: true }
   ];
 
   var AANSLAGJAAR_LABELS = {

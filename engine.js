@@ -1,8 +1,9 @@
 "use strict";
 /*
- * Rekenmotor loonberekening bedrijfsleider (niet RSZ-onderworpen).
+ * Rekenmotor loonpakket bedrijfsleider (niet RSZ-onderworpen).
  * Pure functies: geen DOM, geen opslag, geen neveneffecten.
- * Bedragen intern in volle precisie; afronding gebeurt pas bij weergave.
+ * Alle invoer en tussenwaarden op jaarbasis, in volle precisie;
+ * afronding en maandweergave gebeuren pas in de UI.
  */
 (function (root) {
 
@@ -68,52 +69,162 @@
     };
   }
 
-  // Volledige berekening van het loonpakket.
-  // input:   { cashloon, vaa: { bewoning, renteBulletkrediet, wagen, gsmInternet } }
-  // p:       opgeloste parameters voor een aanslagjaar (flat map)
-  // options: { bijdragePrive } — false = vennootschap draagt de sociale bijdrage
-  function berekenPakket(input, p, options) {
-    options = options || {};
-    var bijdragePrive = !!options.bijdragePrive;
-    var vaa = input.vaa || {};
-    var vaaTotaal = (vaa.bewoning || 0) + (vaa.renteBulletkrediet || 0) + (vaa.wagen || 0) + (vaa.gsmInternet || 0);
-    var cashloon = input.cashloon || 0;
-    var belastbareBasis = cashloon + vaaTotaal;
-
+  // Kern: van belastbare basis naar sociale bijdrage en personenbelasting.
+  function berekenKern(belastbareBasis, p) {
     var kostenOngeplafonneerd = p["kosten.pct"] * belastbareBasis;
     var beroepskosten = Math.min(kostenOngeplafonneerd, p["kosten.plafond"]);
-    var beroepskostenGeplafonneerd = kostenOngeplafonneerd > p["kosten.plafond"];
-
     var socialeBijdrage = berekenSocialeBijdrage(belastbareBasis, p);
-
     // De sociale bijdrage is volledig fiscaal aftrekbaar, ongeacht wie ze draagt.
     var nettoBelastbaar = Math.max(0, belastbareBasis - beroepskosten - socialeBijdrage.jaar);
-
     var staat = berekenStaatsbelasting(nettoBelastbaar, p);
     var gemeentebelasting = staat.staatsbelasting * p["gemeente.opcentiemenPct"];
-    var personenbelasting = staat.staatsbelasting + gemeentebelasting;
-    var totaleHeffingen = personenbelasting + socialeBijdrage.jaar;
-
-    // VAA worden nooit van het cashloon afgetrokken: ze zaten er nooit in.
-    var nettoBesteedbaarJaar = cashloon - personenbelasting - (bijdragePrive ? socialeBijdrage.jaar : 0);
-    var vennootschapCashUit = cashloon + (bijdragePrive ? 0 : socialeBijdrage.jaar);
-
     return {
-      input: input,
-      options: { bijdragePrive: bijdragePrive },
-      vaaTotaal: vaaTotaal,
       belastbareBasis: belastbareBasis,
       beroepskosten: beroepskosten,
-      beroepskostenGeplafonneerd: beroepskostenGeplafonneerd,
+      beroepskostenGeplafonneerd: kostenOngeplafonneerd > p["kosten.plafond"],
       socialeBijdrage: socialeBijdrage,
       nettoBelastbaar: nettoBelastbaar,
       staat: staat,
       gemeentebelasting: gemeentebelasting,
-      personenbelasting: personenbelasting,
-      totaleHeffingen: totaleHeffingen,
-      nettoBesteedbaarJaar: nettoBesteedbaarJaar,
-      nettoBesteedbaarMaand: nettoBesteedbaarJaar / 12,
-      vennootschapCashUit: vennootschapCashUit
+      personenbelasting: staat.staatsbelasting + gemeentebelasting
+    };
+  }
+
+  // Aandelenopties: VAA = bruto toekenning x onderliggende-factor x VAA-percentage
+  // (optiewet 26/03/1999). De heffing erop volgt via de delta-methode in
+  // berekenPakket; de verkoopkost is het geraamde verlies bij directe verkoop.
+  function berekenOptiesVaa(optiesBruto, p) {
+    return optiesBruto * p["opties.onderliggendeFactor"] * p["opties.vaaPct"];
+  }
+
+  // Maaltijdcheques: vrijgesteld als de eigen bijdrage minstens het wettelijke
+  // minimum bedraagt en de zichtwaarde het maximum niet overschrijdt.
+  function berekenMaaltijdcheques(mc, p) {
+    var aantalJaar = (mc.aantalPerMaand || 0) * 12;
+    var zichtwaarde = mc.zichtwaarde || 0;
+    var eigenBijdrage = aantalJaar * p["mc.minEigenBijdrage"];
+    var totaleZichtwaarde = aantalJaar * zichtwaarde;
+    return {
+      aantalJaar: aantalJaar,
+      zichtwaarde: zichtwaarde,
+      eigenBijdrage: eigenBijdrage,
+      werkgeversDeel: aantalJaar * Math.max(0, zichtwaarde - p["mc.minEigenBijdrage"]),
+      beheerskost: totaleZichtwaarde * p["mc.beheerskostPct"],
+      nettowaarde: totaleZichtwaarde,
+      zichtwaardeBovenMax: zichtwaarde > p["mc.maxZichtwaarde"]
+    };
+  }
+
+  // 80%-regel IPT (indicatieve raming): wettelijk + aanvullend pensioen mag
+  // samen (als jaarrente) niet boven 80% van de normale brutobezoldiging.
+  function berekenIpt80(brutoJaarbezoldiging, ipt, p) {
+    var wettelijkPensioen = p["ipt.wettelijkPensioenPct"] * brutoJaarbezoldiging;
+    var maxAanvullendeRente = Math.max(0, 0.8 * brutoJaarbezoldiging - wettelijkPensioen);
+    var maxKapitaal = maxAanvullendeRente * (p["ipt.loopbaanJaren"] / 40) * p["ipt.omzettingsCoefficient"];
+    var ruimte = Math.max(0, maxKapitaal - (ipt.reedsOpgebouwd || 0));
+    var resterendeJaren = ipt.resterendeJaren || 0;
+    var indicatieveJaarpremie = resterendeJaren > 0 ? ruimte / resterendeJaren : 0;
+    return {
+      brutoJaarbezoldiging: brutoJaarbezoldiging,
+      wettelijkPensioen: wettelijkPensioen,
+      maxAanvullendeRente: maxAanvullendeRente,
+      maxKapitaal: maxKapitaal,
+      ruimte: ruimte,
+      indicatieveJaarpremie: indicatieveJaarpremie,
+      premieBovenRuimte: (ipt.jaarpremie || 0) > indicatieveJaarpremie && resterendeJaren > 0
+    };
+  }
+
+  // Volledige berekening van het loonpakket. Alle bedragen per jaar.
+  // input: {
+  //   cashloon,
+  //   vaa: { wagen, bewoning, renteBulletkrediet, pc, internet,
+  //          telefonieToestel, telefonieAbonnement, andere },
+  //   opties: { bruto, beheerskost },
+  //   maaltijdcheques: { aantalPerMaand, zichtwaarde },
+  //   onkosten: { totaal },
+  //   ipt: { jaarpremie, resterendeJaren, reedsOpgebouwd }
+  // }
+  // options: { bijdragePrive } — false = vennootschap draagt de sociale bijdrage
+  function berekenPakket(input, p, options) {
+    options = options || {};
+    var bijdragePrive = !!options.bijdragePrive;
+    var cashloon = input.cashloon || 0;
+    var vaa = input.vaa || {};
+    var opties = input.opties || {};
+    var onkosten = input.onkosten || {};
+    var ipt = input.ipt || {};
+
+    var vaaTotaalExclOpties = 0;
+    for (var k in vaa) vaaTotaalExclOpties += vaa[k] || 0;
+
+    var optiesBruto = opties.bruto || 0;
+    var optiesVaa = berekenOptiesVaa(optiesBruto, p);
+
+    // Delta-methode: het pakket met en zonder opties-VAA doorrekenen, zodat de
+    // heffing die aan de opties toe te rekenen valt exact zichtbaar wordt.
+    var met = berekenKern(cashloon + vaaTotaalExclOpties + optiesVaa, p);
+    var zonder = optiesVaa > 0 ? berekenKern(cashloon + vaaTotaalExclOpties, p) : met;
+
+    var mc = berekenMaaltijdcheques(input.maaltijdcheques || {}, p);
+
+    var pbDeltaOpties = met.personenbelasting - zonder.personenbelasting;
+    var sbDeltaOpties = met.socialeBijdrage.jaar - zonder.socialeBijdrage.jaar;
+    var heffingOpties = pbDeltaOpties + (bijdragePrive ? sbDeltaOpties : 0);
+    var optiesVerkoopkost = optiesBruto * p["opties.verkoopkostPct"];
+    var optiesNetto = optiesBruto - heffingOpties - optiesVerkoopkost;
+
+    // VAA en opties worden nooit van het cashloon afgetrokken: ze zaten er
+    // nooit in. De heffing op het optiedeel wordt aan de opties toegerekend.
+    var nettoCash = cashloon
+      - zonder.personenbelasting
+      - (bijdragePrive ? zonder.socialeBijdrage.jaar : 0)
+      + (onkosten.totaal || 0)
+      - mc.eigenBijdrage;
+
+    var nettoGecorrigeerd = nettoCash + (optiesBruto > 0 ? optiesNetto : 0) + mc.nettowaarde;
+
+    var vennootschapCashUit = cashloon
+      + (bijdragePrive ? 0 : met.socialeBijdrage.jaar)
+      + (onkosten.totaal || 0)
+      + mc.werkgeversDeel + mc.beheerskost
+      + optiesBruto + (opties.beheerskost || 0)
+      + (ipt.jaarpremie || 0);
+
+    var ipt80 = berekenIpt80(cashloon + vaaTotaalExclOpties, ipt, p);
+
+    return {
+      input: input,
+      options: { bijdragePrive: bijdragePrive },
+      vaaTotaalExclOpties: vaaTotaalExclOpties,
+      optiesVaa: optiesVaa,
+      belastbareBasis: met.belastbareBasis,
+      beroepskosten: met.beroepskosten,
+      beroepskostenGeplafonneerd: met.beroepskostenGeplafonneerd,
+      socialeBijdrage: met.socialeBijdrage,
+      nettoBelastbaar: met.nettoBelastbaar,
+      staat: met.staat,
+      gemeentebelasting: met.gemeentebelasting,
+      personenbelasting: met.personenbelasting,
+      personenbelastingZonderOpties: zonder.personenbelasting,
+      totaleHeffingen: met.personenbelasting + met.socialeBijdrage.jaar,
+      opties: {
+        bruto: optiesBruto,
+        vaa: optiesVaa,
+        heffing: heffingOpties,
+        pbDelta: pbDeltaOpties,
+        sbDelta: sbDeltaOpties,
+        verkoopkost: optiesVerkoopkost,
+        beheerskost: opties.beheerskost || 0,
+        netto: optiesBruto > 0 ? optiesNetto : 0
+      },
+      maaltijdcheques: mc,
+      onkostenTotaal: onkosten.totaal || 0,
+      nettoCash: nettoCash,
+      nettoGecorrigeerd: nettoGecorrigeerd,
+      nettoGecorrigeerdMaand: nettoGecorrigeerd / 12,
+      vennootschapCashUit: vennootschapCashUit,
+      ipt80: ipt80
     };
   }
 
@@ -136,8 +247,12 @@
 
   var Engine = {
     berekenPakket: berekenPakket,
+    berekenKern: berekenKern,
     berekenSocialeBijdrage: berekenSocialeBijdrage,
     berekenStaatsbelasting: berekenStaatsbelasting,
+    berekenOptiesVaa: berekenOptiesVaa,
+    berekenMaaltijdcheques: berekenMaaltijdcheques,
+    berekenIpt80: berekenIpt80,
     ijkcontrole: ijkcontrole
   };
 
