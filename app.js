@@ -46,6 +46,8 @@
       { id: "vaa-wagen", label: "VAA bedrijfswagen (uit loonfiche of boekhouder)", soort: "dual", maand: 193 }
     ]},
     { id: "woning", titel: "Woning via de vennootschap", toggle: true, aan: false, velden: [
+      { id: "woning-handmatig", label: "Ik geef het VAA-bedrag zelf in (cijfer van de boekhouder)", soort: "vink", aan: false },
+      { id: "woning-bedrag", label: "VAA bewoning (incl. eventuele forfaits)", soort: "jaar", waarde: 0 },
       { id: "woning-ki", label: "Kadastraal inkomen (niet geïndexeerd)", soort: "eur", waarde: 1000 },
       { id: "woning-pct", label: "Privégedeelte (%)", soort: "getal", waarde: 100 },
       { id: "woning-verwarming", label: "Forfait verwarming (suggestie: € 2.500/jaar)", soort: "vink", aan: true },
@@ -204,9 +206,10 @@
         telefonieAbonnement: aan("overige") ? jaarwaarde("vaa-tel-abo") : 0,
         pc: aan("overige") ? jaarwaarde("vaa-pc") : 0,
         renteBulletkrediet: aan("overige") ? jaarwaarde("vaa-rente") : 0,
-        andere: aan("overige") ? jaarwaarde("vaa-andere") : 0
+        andere: aan("overige") ? jaarwaarde("vaa-andere") : 0,
+        bewoning: aan("woning") && $("woning-handmatig").checked ? parseBE($("woning-bedrag").value) : 0
       },
-      woning: aan("woning") ? {
+      woning: aan("woning") && !$("woning-handmatig").checked ? {
         ki: parseBE($("woning-ki").value),
         privePct: parseBE($("woning-pct").value) / 100,
         verwarming: $("woning-verwarming").checked,
@@ -241,13 +244,20 @@
     var input = verzamelInput();
     var r = Engine.berekenPakket(input, p, { bijdragePrive: bijdragePrive });
 
+    var handmatig = $("woning-handmatig").checked;
+    ["woning-ki", "woning-pct", "woning-verwarming", "woning-elektriciteit"].forEach(function (id) {
+      $(id).closest(".veldrij").style.display = handmatig ? "none" : "";
+    });
+    $("woning-bedrag").closest(".veldrij").style.display = handmatig ? "" : "none";
+
     var w = r.woning;
-    $("woning-preview").textContent = aan("woning")
-      ? "Berekend VAA: woning " + formatEUR(w.vaaWoning) + " (KI × " + factorFmt.format(p["vaa.kiIndexatie"]) + " × 100/60 × " + getal.format(p["vaa.woningFactor"]) + " × privégedeelte)"
-        + (w.vaaVerwarming ? " + verwarming " + formatEUR(w.vaaVerwarming) : "")
-        + (w.vaaElektriciteit ? " + elektriciteit " + formatEUR(w.vaaElektriciteit) : "")
-        + " = " + formatEUR(w.totaal) + " per jaar."
-      : "";
+    $("woning-preview").textContent = !aan("woning") ? ""
+      : handmatig
+        ? "Het ingegeven bedrag van de boekhouder (" + formatEUR(input.vaa.bewoning) + " per jaar) wordt gebruikt als VAA bewoning."
+        : "Berekend VAA: woning " + formatEUR(w.vaaWoning) + " (KI × " + factorFmt.format(p["vaa.kiIndexatie"]) + " × 100/60 × " + getal.format(p["vaa.woningFactor"]) + " × privégedeelte)"
+          + (w.vaaVerwarming ? " + verwarming " + formatEUR(w.vaaVerwarming) : "")
+          + (w.vaaElektriciteit ? " + elektriciteit " + formatEUR(w.vaaElektriciteit) : "")
+          + " = " + formatEUR(w.totaal) + " per jaar.";
 
     $("netto-gecorrigeerd-jaar").textContent = formatEUR(r.nettoGecorrigeerd) + " per jaar";
     $("netto-gecorrigeerd-maand").textContent = formatEUR(r.nettoGecorrigeerdMaand);
