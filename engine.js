@@ -90,6 +90,26 @@
     };
   }
 
+  // Woning via de vennootschap: VAA = geindexeerd KI x 100/60 x factor 2,
+  // beperkt tot het privegedeelte. De forfaits verwarming/elektriciteit gelden
+  // enkel als de vennootschap ook de woning ter beschikking stelt.
+  function berekenWoning(woning, p) {
+    woning = woning || {};
+    var ki = woning.ki || 0;
+    var privePct = woning.privePct === undefined ? 1 : woning.privePct;
+    var vaaWoning = ki * p["vaa.kiIndexatie"] * (100 / 60) * p["vaa.woningFactor"] * privePct;
+    var vaaVerwarming = woning.verwarming ? p["vaa.verwarmingForfait"] : 0;
+    var vaaElektriciteit = woning.elektriciteit ? p["vaa.elektriciteitForfait"] : 0;
+    return {
+      ki: ki,
+      privePct: privePct,
+      vaaWoning: vaaWoning,
+      vaaVerwarming: vaaVerwarming,
+      vaaElektriciteit: vaaElektriciteit,
+      totaal: vaaWoning + vaaVerwarming + vaaElektriciteit
+    };
+  }
+
   // Aandelenopties: VAA = bruto toekenning x onderliggende-factor x VAA-percentage
   // (optiewet 26/03/1999). De heffing erop volgt via de delta-methode in
   // berekenPakket; de verkoopkost is het geraamde verlies bij directe verkoop.
@@ -140,6 +160,7 @@
   //   cashloon,
   //   vaa: { wagen, bewoning, renteBulletkrediet, pc, internet,
   //          telefonieToestel, telefonieAbonnement, andere },
+  //   woning: { ki, privePct, verwarming, elektriciteit },
   //   opties: { bruto, beheerskost },
   //   maaltijdcheques: { aantalPerMaand, zichtwaarde },
   //   onkosten: { totaal },
@@ -155,7 +176,9 @@
     var onkosten = input.onkosten || {};
     var ipt = input.ipt || {};
 
-    var vaaTotaalExclOpties = 0;
+    var woning = berekenWoning(input.woning, p);
+
+    var vaaTotaalExclOpties = woning.totaal;
     for (var k in vaa) vaaTotaalExclOpties += vaa[k] || 0;
 
     var optiesBruto = opties.bruto || 0;
@@ -197,6 +220,7 @@
       input: input,
       options: { bijdragePrive: bijdragePrive },
       vaaTotaalExclOpties: vaaTotaalExclOpties,
+      woning: woning,
       optiesVaa: optiesVaa,
       belastbareBasis: met.belastbareBasis,
       beroepskosten: met.beroepskosten,
@@ -250,6 +274,7 @@
     berekenKern: berekenKern,
     berekenSocialeBijdrage: berekenSocialeBijdrage,
     berekenStaatsbelasting: berekenStaatsbelasting,
+    berekenWoning: berekenWoning,
     berekenOptiesVaa: berekenOptiesVaa,
     berekenMaaltijdcheques: berekenMaaltijdcheques,
     berekenIpt80: berekenIpt80,

@@ -205,6 +205,19 @@ button.klein { padding: 0.15rem 0.5rem; font-size: 0.8rem; }
 
 footer { max-width: 46rem; margin: 0 auto; padding: 0 1rem 2rem; color: var(--grijs); font-size: 0.85rem; }
 
+.toggle-label { font-weight: 600; cursor: pointer; }
+.toggle-label input { margin-right: 0.35rem; }
+fieldset .veldrij .toggle-label { font-weight: 400; }
+.werkbalk { display: flex; justify-content: flex-end; margin: 0.75rem 0; }
+
+@media print {
+  header nav, .werkbalk, footer, button { display: none !important; }
+  body { background: #fff; }
+  .kaart { break-inside: avoid; border-color: #999; }
+  .kaart-netto { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  details.kaart { display: none; }
+}
+
 @media (max-width: 480px) {
   .veldrij { flex-direction: column; align-items: stretch; }
   .veldrij input { width: 100%; text-align: left; }

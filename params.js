@@ -38,6 +38,12 @@
       "gemeente.naam": "Lommel",
       "gemeente.opcentiemenPct": 0.06,
 
+      // Woning en energie via de vennootschap (VAA, inkomstenjaar 2025)
+      "vaa.kiIndexatie": 2.2446,
+      "vaa.woningFactor": 2,
+      "vaa.verwarmingForfait": 2500,
+      "vaa.elektriciteitForfait": 1250,
+
       // Maaltijdcheques (vrijgesteld mits minimale eigen bijdrage en max zichtwaarde)
       "mc.minEigenBijdrage": 1.09,
       "mc.maxZichtwaarde": 10,
@@ -64,6 +70,7 @@
     sb: "https://www.liantis.be/sites/default/files/uploads/bijdragetabel_2026_1225_NL_digitaal.pdf",
     sbOfficieel: "https://www.rsvz.be/nl/faq/hoeveel-sociale-bijdragen-moet-ik-betalen",
     gemeente: "https://www.lommel.be/aanvullende-gemeentebelasting-op-de-personenbelasting-van-de-staat",
+    woning: "https://www.attentia.be/nl/nieuws/voordelen-huisvesting-verwarming-en-elektriciteit-in-2025/",
     mc: "https://www.rsz.be/werkgevers/loonelementen/voordelen/maaltijdcheques",
     opties: "https://financien.belgium.be/nl/ondernemingen/personenbelasting/voordelen-alle-aard/aandelenopties",
     ipt: "https://financien.belgium.be/nl/ondernemingen/vennootschapsbelasting/belastingvoordelen/individuele-pensioentoezegging"
@@ -94,6 +101,11 @@
 
     { key: "gemeente.naam", label: "Gemeente", categorie: "Gemeentebelasting", type: "tekst", bron: BRON.gemeente, verify: false },
     { key: "gemeente.opcentiemenPct", label: "Aanvullende gemeentebelasting", categorie: "Gemeentebelasting", type: "pct", bron: BRON.gemeente, verify: true },
+
+    { key: "vaa.kiIndexatie", label: "Indexatiecoëfficiënt kadastraal inkomen", categorie: "Woning & energie (VAA)", type: "factor", bron: BRON.woning, verify: true },
+    { key: "vaa.woningFactor", label: "Vermenigvuldigingsfactor woning (x2)", categorie: "Woning & energie (VAA)", type: "factor", bron: BRON.woning, verify: false },
+    { key: "vaa.verwarmingForfait", label: "Forfait verwarming (leidinggevend)", categorie: "Woning & energie (VAA)", type: "eur", bron: BRON.woning, verify: true },
+    { key: "vaa.elektriciteitForfait", label: "Forfait elektriciteit (leidinggevend)", categorie: "Woning & energie (VAA)", type: "eur", bron: BRON.woning, verify: true },
 
     { key: "mc.minEigenBijdrage", label: "Minimale eigen bijdrage per cheque", categorie: "Maaltijdcheques", type: "eur", bron: BRON.mc, verify: false },
     { key: "mc.maxZichtwaarde", label: "Maximale zichtwaarde per cheque", categorie: "Maaltijdcheques", type: "eur", bron: BRON.mc, verify: true },

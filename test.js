@@ -75,9 +75,21 @@ assertTrue("netto gecorrigeerd = netto cash + opties netto + MC-waarde",
 var verwachtVennootschap = 30000 + k.socialeBijdrage.jaar + 3011.88 + 2138.40 + 180 + 18360 + 600;
 assertClose("vennootschap cash uit (samenstelling)", k.vennootschapCashUit, verwachtVennootschap, 0.01);
 
-// Testgeval 4 — 80%-regel IPT op bruto 32.460 (cash + gewone VAA)
+// Testgeval 4 — woning uit kadastraal inkomen:
+// KI 1.000 x 2,2446 x 100/60 x 2 = 7.482, plus forfaits verwarming/elektriciteit
 console.log("");
-console.log("Testgeval 4: 80%-regel IPT");
+console.log("Testgeval 4: VAA woning en energie uit KI");
+var w = Engine.berekenWoning({ ki: 1000, privePct: 1, verwarming: true, elektriciteit: true }, p);
+assertClose("VAA woning (KI 1.000, 100% privé)", w.vaaWoning, 7482.00, 0.01);
+assertClose("forfait verwarming", w.vaaVerwarming, 2500, 0.01);
+assertClose("forfait elektriciteit", w.vaaElektriciteit, 1250, 0.01);
+assertClose("totaal woning & energie", w.totaal, 11232.00, 0.01);
+var wHalf = Engine.berekenWoning({ ki: 1000, privePct: 0.5 }, p);
+assertClose("VAA woning bij 50% privégedeelte", wHalf.vaaWoning, 3741.00, 0.01);
+
+// Testgeval 5 — 80%-regel IPT op bruto 32.460 (cash + gewone VAA)
+console.log("");
+console.log("Testgeval 5: 80%-regel IPT");
 assertClose("maximale aanvullende rente", k.ipt80.maxAanvullendeRente, 17853, 0.5);
 assertClose("maximaal kapitaal (x 13,43)", k.ipt80.maxKapitaal, 239765.79, 1);
 assertClose("indicatieve jaarpremie (20 jaar)", k.ipt80.indicatieveJaarpremie, 11988.29, 1);
