@@ -138,33 +138,6 @@
     };
   }
 
-  // 80%-regel IPT (indicatieve raming): wettelijk + aanvullend pensioen mag
-  // samen (als jaarrente) niet boven 80% van de normale brutobezoldiging.
-  function berekenIpt80(brutoJaarbezoldiging, ipt, p) {
-    var wettelijkPensioen = p["ipt.wettelijkPensioenPct"] * brutoJaarbezoldiging;
-    var maxAanvullendeRente = Math.max(0, 0.8 * brutoJaarbezoldiging - wettelijkPensioen);
-    var maxKapitaal = maxAanvullendeRente * (p["ipt.loopbaanJaren"] / 40) * p["ipt.omzettingsCoefficient"];
-    var ruimte = Math.max(0, maxKapitaal - (ipt.reedsOpgebouwd || 0));
-    var resterendeJaren = ipt.resterendeJaren || 0;
-    // Premie via kapitalisatie: de stortingen renderen tot de pensioenleeftijd,
-    // dus de maximale jaarpremie is het kapitaal gedeeld door de eindwaarde-
-    // factor van een annuiteit (zoals in de X-imus prognose), niet door n.
-    var rendement = p["ipt.rendementPct"] || 0;
-    var eindwaardeFactor = resterendeJaren > 0
-      ? (rendement > 0 ? (Math.pow(1 + rendement, resterendeJaren) - 1) / rendement : resterendeJaren)
-      : 0;
-    var indicatieveJaarpremie = eindwaardeFactor > 0 ? ruimte / eindwaardeFactor : 0;
-    return {
-      brutoJaarbezoldiging: brutoJaarbezoldiging,
-      wettelijkPensioen: wettelijkPensioen,
-      maxAanvullendeRente: maxAanvullendeRente,
-      maxKapitaal: maxKapitaal,
-      ruimte: ruimte,
-      indicatieveJaarpremie: indicatieveJaarpremie,
-      premieBovenRuimte: (ipt.jaarpremie || 0) > indicatieveJaarpremie && resterendeJaren > 0
-    };
-  }
-
   // Volledige berekening van het loonpakket. Alle bedragen per jaar.
   // input: {
   //   cashloon,
@@ -174,7 +147,9 @@
   //   opties: { bruto, beheerskost },
   //   maaltijdcheques: { aantalPerMaand, zichtwaarde },
   //   onkosten: { totaal },
-  //   ipt: { jaarpremie, resterendeJaren, reedsOpgebouwd }
+  //   ipt: { jaarpremie }   — de IPT-premie telt enkel mee als kost van
+  //                           de vennootschap; de 80%-regel rekent de
+  //                           verzekeraar of boekhouder
   // }
   // options: { bijdragePrive } — false = vennootschap draagt de sociale bijdrage
   function berekenPakket(input, p, options) {
@@ -231,8 +206,6 @@
       + optiesBruto + (opties.beheerskost || 0)
       + (ipt.jaarpremie || 0);
 
-    var ipt80 = berekenIpt80(cashloon + vaaTotaalExclOpties, ipt, p);
-
     return {
       input: input,
       options: { bijdragePrive: bijdragePrive },
@@ -264,8 +237,7 @@
       nettoCash: nettoCash,
       nettoGecorrigeerd: nettoGecorrigeerd,
       nettoGecorrigeerdMaand: nettoGecorrigeerd / 12,
-      vennootschapCashUit: vennootschapCashUit,
-      ipt80: ipt80
+      vennootschapCashUit: vennootschapCashUit
     };
   }
 
@@ -294,7 +266,6 @@
     berekenWoning: berekenWoning,
     berekenOptiesVaa: berekenOptiesVaa,
     berekenMaaltijdcheques: berekenMaaltijdcheques,
-    berekenIpt80: berekenIpt80,
     ijkcontrole: ijkcontrole
   };
 
