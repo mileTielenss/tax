@@ -60,7 +60,7 @@ var k = Engine.berekenPakket({
   opties: { bruto: 18360, beheerskost: 600 },
   maaltijdcheques: { aantalPerMaand: 20, zichtwaarde: 10 },
   onkosten: { totaal: 3011.88 },
-  ipt: { jaarpremie: 0, resterendeJaren: 20, reedsOpgebouwd: 0 }
+  ipt: { jaarpremie: 0 }
 }, p, { bijdragePrive: false });
 
 assertClose("opties-VAA (18% x 1,83, simulatie: 6.048)", k.opties.vaa, 6048, 1);
@@ -90,20 +90,13 @@ assertClose("woongedeelte bij 100% privé (X-imus: 5.466,33)", w100.vaaWoning, 5
 var wGem = Engine.berekenWoning({ ki: 713, privePct: 0.75, gemeubeld: true }, p);
 assertClose("mark-up gemeubeld +2/3 (X-imus: 2.733,17)", wGem.markUpGemeubeld, 2733.17, 0.01);
 
-// Testgeval 5 — 80%-regel IPT op bruto 32.460 (cash + gewone VAA);
-// premie via kapitalisatie aan 4,7% (impliciet rendement X-imus prognose)
+// Testgeval 5 — IPT-premie telt enkel mee als kost van de vennootschap
 console.log("");
-console.log("Testgeval 5: 80%-regel IPT");
-assertClose("maximale aanvullende rente", k.ipt80.maxAanvullendeRente, 17853, 0.5);
-assertClose("maximaal kapitaal (x 13,43)", k.ipt80.maxKapitaal, 239765.79, 1);
-assertClose("indicatieve jaarpremie (20 jaar, 4,7%)", k.ipt80.indicatieveJaarpremie, 7484.09, 1);
-assertTrue("premie 0 zit binnen de ruimte", !k.ipt80.premieBovenRuimte);
-
-// X-imus consistentie: bij 48.000 bruto en 38,75 jaar moet de premie van
-// 3.133,44 uit het verslag binnen de indicatieve ruimte vallen.
-var ximusIpt = Engine.berekenIpt80(48000, { jaarpremie: 3133.44, resterendeJaren: 38.75, reedsOpgebouwd: 0 }, p);
-assertClose("max premie bij 48.000 en 38,75 jaar", ximusIpt.indicatieveJaarpremie, 3381.24, 1);
-assertTrue("X-imus premie 3.133,44 zit binnen de ruimte", !ximusIpt.premieBovenRuimte);
+console.log("Testgeval 5: IPT-premie als vennootschapskost");
+var metIpt = Engine.berekenPakket({ cashloon: 30000, ipt: { jaarpremie: 3133.44 } }, p, {});
+var zonderIpt = Engine.berekenPakket({ cashloon: 30000 }, p, {});
+assertClose("cash out stijgt met de premie", metIpt.vennootschapCashUit - zonderIpt.vennootschapCashUit, 3133.44, 0.01);
+assertTrue("premie raakt het netto niet", Math.abs(metIpt.nettoGecorrigeerd - zonderIpt.nettoGecorrigeerd) < 0.001);
 
 console.log("");
 if (fouten > 0) {

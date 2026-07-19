@@ -73,6 +73,7 @@
 
       <div class="kaart">
         <h2>Netto-opbouw</h2>
+        <p class="toelichting">Van cashloon naar wat er werkelijk op je rekening komt. De voordelen alle aard staan hier niet tussen: die kwamen nooit als cash binnen — hun belasting zit wel in de belastingregel.</p>
         <table class="mj">
           <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
           <tr><td>Cash brutoloon</td><td id="n-bruto-m"></td><td id="n-bruto-j"></td></tr>
@@ -86,6 +87,7 @@
 
       <div class="kaart" id="kaart-opties">
         <h2>Aandelenopties</h2>
+        <p class="toelichting">Het warrantenplan: de toekenning wordt belast als voordeel alle aard en meteen verkocht — wat overblijft is extra netto bovenop je loon.</p>
         <table class="mj">
           <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
           <tr><td>Bruto toekenning</td><td id="o-bruto-m"></td><td id="o-bruto-j"></td></tr>
@@ -98,19 +100,8 @@
       </div>
 
       <div class="kaart">
-        <h2>Heffingen</h2>
-        <table class="mj">
-          <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
-          <tr><td>Sociale bijdrage (<span id="h-sb-kwartaal"></span> per kwartaal)</td><td id="h-sb-m"></td><td id="h-sb-j"></td></tr>
-          <tr><td>Staatsbelasting</td><td id="h-staat-m"></td><td id="h-staat-j"></td></tr>
-          <tr><td>Gemeentebelasting (<span id="h-gemeente-naam"></span>, <span id="h-gemeente-pct"></span>)</td><td id="h-gemeente-m"></td><td id="h-gemeente-j"></td></tr>
-          <tr class="totaalrij"><td>Totale heffingen</td><td id="h-totaal-m"></td><td id="h-totaal-j"></td></tr>
-        </table>
-        <p class="toelichting" id="h-druk"></p>
-      </div>
-
-      <div class="kaart">
         <h2>Vennootschap: cash out voor het loonpakket</h2>
+        <p class="toelichting">Wat de vennootschap in totaal effectief uitgeeft aan dit pakket: het loon plus alle bijhorende kosten.</p>
         <table class="mj">
           <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
           <tr><td>Cash brutoloon</td><td id="v-bruto-m"></td><td id="v-bruto-j"></td></tr>
@@ -127,30 +118,22 @@
         <p class="toelichting">De werkelijke kosten van wagen, gsm of woning staan hier los van: die voordelen alle aard zijn fiscale forfaits, geen kasstromen. De rente op het bulletkrediet telt wél mee — de vennootschap betaalt die effectief en exact dat bedrag is het VAA.</p>
       </div>
 
-      <div class="kaart">
-        <h2>IPT: zoveel mag je sparen op dit loon (80%-regel)</h2>
-        <p class="groot-paars" id="p-premie"></p>
-        <p class="middel-grijs" id="p-premie-maand"></p>
-        <details>
-          <summary>Detail van de berekening</summary>
-          <table>
-            <tr><td>Normale brutojaarbezoldiging (cash + VAA)</td><td id="p-bruto"></td></tr>
-            <tr><td>Geraamd wettelijk pensioen</td><td id="p-wettelijk"></td></tr>
-            <tr><td>Maximale aanvullende jaarrente (80%-grens)</td><td id="p-rente"></td></tr>
-            <tr><td>Maximaal eindkapitaal</td><td id="p-kapitaal"></td></tr>
-            <tr><td>Ruimte na reeds opgebouwd kapitaal</td><td id="p-ruimte"></td></tr>
-          </table>
-        </details>
-        <p class="toelichting">Vuistregelraming op basis van dit loon, de jaren tot pensioen en het verwachte rendement (instelbaar in Tarieven). De exacte 80%-regel hangt af van loopbaan, backservice en verzekeringstarief — laat de definitieve premie door verzekeraar of boekhouder rekenen.</p>
-      </div>
-
       <div class="kaart kaart-inzicht">
         <h2>Het VAA-effect</h2>
         <p>De voordelen alle aard (<span id="i-vaa-totaal"></span>, aandelenopties meegeteld) verhogen de belastbare basis tot <span id="i-basis"></span>, maar komen nooit als cash binnen. De heffing op dat niet-cash deel wordt betaald uit je cashloon.</p>
       </div>
 
       <details class="kaart">
-        <summary>Tussenstappen van de berekening</summary>
+        <summary>Heffingen en tussenstappen van de berekening</summary>
+        <p class="toelichting">Hoeveel er in totaal naar de staat en het sociaal verzekeringsfonds gaat, en hoe de belasting stap voor stap berekend is.</p>
+        <table class="mj">
+          <tr class="kopcel"><td></td><td>maand</td><td>jaar</td></tr>
+          <tr><td>Sociale bijdrage (<span id="h-sb-kwartaal"></span> per kwartaal)</td><td id="h-sb-m"></td><td id="h-sb-j"></td></tr>
+          <tr><td>Staatsbelasting</td><td id="h-staat-m"></td><td id="h-staat-j"></td></tr>
+          <tr><td>Gemeentebelasting (<span id="h-gemeente-naam"></span>, <span id="h-gemeente-pct"></span>)</td><td id="h-gemeente-m"></td><td id="h-gemeente-j"></td></tr>
+          <tr class="totaalrij"><td>Totale heffingen</td><td id="h-totaal-m"></td><td id="h-totaal-j"></td></tr>
+        </table>
+        <p class="toelichting" id="h-druk"></p>
         <table>
           <tr><td>Belastbare basis (cash + alle VAA)</td><td id="t-basis"></td></tr>
           <tr><td>Forfaitaire beroepskosten<span id="t-kosten-plafond"></span></td><td id="t-kosten"></td></tr>

@@ -37,13 +37,13 @@
    *   "vink"   : ja/nee binnen de sectie
    * Waarden van bedrag/jaar-velden worden intern altijd per jaar bewaard. */
   var INVOER_SECTIES = [
-    { id: "bezoldiging", titel: "Bezoldiging", velden: [
+    { id: "bezoldiging", titel: "Bezoldiging", uitleg: "Het cashloon dat de vennootschap effectief uitbetaalt — de basis van alles.", velden: [
       { id: "cashloon", label: "Cash brutoloon", soort: "bedrag" }
     ]},
-    { id: "wagen", titel: "Bedrijfswagen", toggle: true, velden: [
+    { id: "wagen", titel: "Bedrijfswagen", uitleg: "Het fiscale voordeel van de wagen zoals op de loonfiche. Verhoogt je belastbare basis, maar is geen cash.", toggle: true, velden: [
       { id: "vaa-wagen", label: "VAA wagen (loonfiche)", soort: "bedrag" }
     ]},
-    { id: "woning", titel: "Woning via de vennootschap", toggle: true, velden: [
+    { id: "woning", titel: "Woning via de vennootschap", uitleg: "Gratis wonen op kosten van de vennootschap. Het belastbare voordeel wordt berekend uit het kadastraal inkomen, of je neemt het cijfer van de boekhouder over.", toggle: true, velden: [
       { id: "woning-handmatig", label: "VAA-bedrag zelf ingeven (cijfer boekhouder)", soort: "vink" },
       { id: "woning-bedrag", label: "VAA bewoning (incl. forfaits)", soort: "jaar" },
       { id: "woning-ki", label: "Kadastraal inkomen (niet geïndexeerd)", soort: "eur" },
@@ -54,26 +54,24 @@
       { id: "woning-preview", soort: "preview" },
       { id: "woning-ximus", soort: "preview" }
     ]},
-    { id: "overige", titel: "Overige voordelen alle aard", toggle: true, velden: [
+    { id: "overige", titel: "Overige voordelen alle aard", uitleg: "Andere belastbare voordelen. De rente bulletkrediet betaalt de vennootschap effectief in jouw plaats en telt daarom ook mee in haar cash-out.", toggle: true, velden: [
       { id: "vaa-gsm", label: "Gsm, internet & pc", soort: "bedrag" },
       { id: "vaa-rente", label: "Rente bulletkrediet", soort: "bedrag" },
       { id: "vaa-andere", label: "Andere VAA", soort: "bedrag" }
     ]},
-    { id: "opties", titel: "Aandelenopties", toggle: true, velden: [
+    { id: "opties", titel: "Aandelenopties", uitleg: "Warrantenplan: de toekenning wordt belast als voordeel en meteen verkocht — extra netto bovenop het loon.", toggle: true, velden: [
       { id: "opties-bruto", label: "Bruto toekenning", soort: "bedrag" },
       { id: "opties-beheer", label: "Beheerskost (vennootschap)", soort: "bedrag" }
     ]},
-    { id: "mc", titel: "Maaltijdcheques", toggle: true, velden: [
+    { id: "mc", titel: "Maaltijdcheques", uitleg: "Belastingvrij extraatje. Je eigen bijdrage gaat van je netto af; het werkgeversdeel en de beheerskost draagt de vennootschap.", toggle: true, velden: [
       { id: "mc-aantal", label: "Cheques per maand", soort: "getal" },
       { id: "mc-zichtwaarde", label: "Zichtwaarde per cheque", soort: "eur" }
     ]},
-    { id: "onkosten", titel: "Onkostenvergoedingen (belastingvrij)", toggle: true, velden: [
+    { id: "onkosten", titel: "Onkostenvergoedingen (belastingvrij)", uitleg: "Forfaitaire terugbetalingen van eigen kosten (thuiswerk, parking, vakliteratuur…): belastingvrije cash bovenop het loon.", toggle: true, velden: [
       { id: "onk-totaal", label: "Totaal vergoedingen", soort: "bedrag" }
     ]},
-    { id: "ipt", titel: "IPT (pensioen via de vennootschap)", toggle: true, velden: [
-      { id: "ipt-premie", label: "Geplande jaarpremie", soort: "jaar" },
-      { id: "ipt-restjaren", label: "Jaren tot pensioen", soort: "getal" },
-      { id: "ipt-opgebouwd", label: "Reeds opgebouwd kapitaal", soort: "jaar" }
+    { id: "ipt", titel: "IPT (pensioen via de vennootschap)", uitleg: "De pensioenpremie die de vennootschap stort. Telt mee als kost van de vennootschap; of de premie binnen de 80%-regel past, rekent de verzekeraar of boekhouder.", toggle: true, velden: [
+      { id: "ipt-premie", label: "Jaarpremie", soort: "jaar" }
     ]}
   ];
 
@@ -106,7 +104,7 @@
         "opties-bruto": 18360, "opties-beheer": 600,
         "mc-aantal": 20, "mc-zichtwaarde": 10,
         "onk-totaal": 3011.88,
-        "ipt-premie": 0, "ipt-restjaren": 20, "ipt-opgebouwd": 0
+        "ipt-premie": 0
       }
     };
   }
@@ -121,7 +119,6 @@
     s.waarden["onk-totaal"] = 0;
     // IPT zoals in het X-imus verslag: 3.133,44/jaar tot de pensioenleeftijd.
     s.waarden["ipt-premie"] = 3133.44;
-    s.waarden["ipt-restjaren"] = 39;
     return s;
   }
 
@@ -191,6 +188,13 @@
         legend.textContent = sectie.titel;
       }
       fs.appendChild(legend);
+
+      if (sectie.uitleg) {
+        var uitleg = document.createElement("p");
+        uitleg.className = "toelichting sectie-uitleg";
+        uitleg.textContent = sectie.uitleg;
+        fs.appendChild(uitleg);
+      }
 
       var inhoud = document.createElement("div");
       inhoud.id = "inhoud-" + sectie.id;
@@ -417,9 +421,7 @@
         ? { aantalPerMaand: parseBE($("mc-aantal").value), zichtwaarde: parseBE($("mc-zichtwaarde").value) }
         : { aantalPerMaand: 0, zichtwaarde: 0 },
       onkosten: { totaal: aan("onkosten") ? jaarwaarde("onk-totaal") : 0 },
-      ipt: aan("ipt")
-        ? { jaarpremie: jaarwaarde("ipt-premie"), resterendeJaren: parseBE($("ipt-restjaren").value), reedsOpgebouwd: jaarwaarde("ipt-opgebouwd") }
-        : { jaarpremie: 0, resterendeJaren: 0, reedsOpgebouwd: 0 }
+      ipt: { jaarpremie: aan("ipt") ? jaarwaarde("ipt-premie") : 0 }
     };
   }
 
@@ -499,19 +501,6 @@
     zetMJ("v-ipt", input.ipt.jaarpremie);
     zetMJ("v-totaal", r.vennootschapCashUit);
 
-    $("p-bruto").textContent = formatEUR(r.ipt80.brutoJaarbezoldiging);
-    $("p-wettelijk").textContent = formatEUR(r.ipt80.wettelijkPensioen);
-    $("p-rente").textContent = formatEUR(r.ipt80.maxAanvullendeRente);
-    $("p-kapitaal").textContent = formatEUR(r.ipt80.maxKapitaal);
-    $("p-ruimte").textContent = formatEUR(r.ipt80.ruimte);
-    if (aan("ipt") && input.ipt.resterendeJaren > 0) {
-      $("p-premie").textContent = formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar";
-      $("p-premie-maand").textContent = formatEUR(r.ipt80.indicatieveJaarpremie / 12) + " per maand, gedurende " + getal.format(input.ipt.resterendeJaren) + " jaar";
-    } else {
-      $("p-premie").textContent = "—";
-      $("p-premie-maand").textContent = "Vink IPT aan en vul de jaren tot pensioen in.";
-    }
-
     $("i-vaa-totaal").textContent = formatEUR(r.vaaTotaalExclOpties + r.optiesVaa);
     $("i-basis").textContent = formatEUR(r.belastbareBasis);
 
@@ -589,9 +578,6 @@
     html += rij("Totale cash out vennootschap", r.vennootschapCashUit, "lb-eind");
     html += "</table>";
 
-    if (input.ipt.jaarpremie > 0 || r.ipt80.indicatieveJaarpremie > 0) {
-      html += '<p class="lb-voet">IPT: geplande premie ' + formatEUR(input.ipt.jaarpremie) + " per jaar; indicatieve maximale premie volgens de 80%-regel " + formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar (max. eindkapitaal " + formatEUR(r.ipt80.maxKapitaal) + ").</p>";
-    }
     html += '<p class="lb-voet">Indicatieve simulatie, geen officieel loondocument. Voordelen alle aard zijn fiscale forfaits en komen niet als cash binnen; de werkelijke kosten van wagen, gsm of woning staan los van dit overzicht. De definitieve aanslag ligt bij de boekhouder.</p>';
 
     $("loonbrief").innerHTML = html;
@@ -625,9 +611,6 @@
     var meldingen = [];
     if (r.maaltijdcheques.zichtwaardeBovenMax) {
       meldingen.push("De zichtwaarde van de maaltijdcheques (" + formatEUR(r.maaltijdcheques.zichtwaarde) + ") ligt boven het vrijgestelde maximum van " + formatEUR(p["mc.maxZichtwaarde"]) + ".");
-    }
-    if (r.ipt80.premieBovenRuimte) {
-      meldingen.push("De geplande IPT-premie (" + formatEUR(input.ipt.jaarpremie) + ") ligt boven de indicatieve 80%-ruimte van " + formatEUR(r.ipt80.indicatieveJaarpremie) + " per jaar.");
     }
     if (r.socialeBijdrage.minimumToegepast) {
       meldingen.push("De minimale kwartaalbijdrage voor zelfstandigen is van toepassing.");

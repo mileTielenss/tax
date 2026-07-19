@@ -56,15 +56,7 @@
       // VAA = bruto toekenning x onderliggende-factor x VAA-percentage
       "opties.vaaPct": 0.18,
       "opties.onderliggendeFactor": 1.83,
-      "opties.verkoopkostPct": 0.08,
-
-      // 80%-regel IPT (indicatieve raming). Het rendement kapitaliseert de
-      // premies tot de pensioenleeftijd; 4,7% is het impliciete rendement
-      // uit de X-imus prognose (3.133,44/jaar x 38,75 jaar -> 327.634).
-      "ipt.wettelijkPensioenPct": 0.25,
-      "ipt.loopbaanJaren": 40,
-      "ipt.omzettingsCoefficient": 13.43,
-      "ipt.rendementPct": 0.047
+      "opties.verkoopkostPct": 0.08
     }
     // Nieuw aanslagjaar: blok kopieren, sleutel en bedragen aanpassen.
   };
@@ -118,12 +110,7 @@
 
     { key: "opties.vaaPct", label: "VAA-percentage optiewet", categorie: "Aandelenopties", type: "pct", bron: BRON.opties, verify: false },
     { key: "opties.onderliggendeFactor", label: "Onderliggende waarde / bruto toekenning", categorie: "Aandelenopties", type: "factor", bron: BRON.opties, verify: true },
-    { key: "opties.verkoopkostPct", label: "Verkoopkost bij directe verkoop", categorie: "Aandelenopties", type: "pct", bron: BRON.opties, verify: true },
-
-    { key: "ipt.wettelijkPensioenPct", label: "Raming wettelijk pensioen (% van bruto)", categorie: "IPT / 80%-regel", type: "pct", bron: BRON.ipt, verify: true },
-    { key: "ipt.loopbaanJaren", label: "Loopbaanjaren (teller op 40)", categorie: "IPT / 80%-regel", type: "factor", bron: BRON.ipt, verify: false },
-    { key: "ipt.omzettingsCoefficient", label: "Omzettingscoëfficiënt rente naar kapitaal", categorie: "IPT / 80%-regel", type: "factor", bron: BRON.ipt, verify: true },
-    { key: "ipt.rendementPct", label: "Verwacht jaarrendement premieberekening", categorie: "IPT / 80%-regel", type: "pct", bron: BRON.ipt, verify: true }
+    { key: "opties.verkoopkostPct", label: "Verkoopkost bij directe verkoop", categorie: "Aandelenopties", type: "pct", bron: BRON.opties, verify: true }
   ];
 
   var AANSLAGJAAR_LABELS = {
